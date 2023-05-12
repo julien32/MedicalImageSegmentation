@@ -51,7 +51,8 @@ def show_points(coords, labels, ax, marker_size=50):
 # load model
 model_type = "vit_b"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-sam = sam_model_registry[model_type](checkpoint="/mnt/shared/lswezel/weights/sam_vit_b_01ec64.pth")
+sam = sam_model_registry[model_type](checkpoint="/mnt/shared/lswezel/weights/sam_vit_b_01ec64.pth") # make sure to update path here
+# -> weights can be downloaded here: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
 sam.to(device=device)
 predictor = SamPredictor(sam)
 

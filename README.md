@@ -14,4 +14,4 @@ from PIL import Image
 import torchvision.transforms as transforms
 import sys
 ```
-runs, you should be fine!
+runs, you should be fine! Then, you will need to [download the pre-trained weights for the ViT-b model](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth) and update the path in `get_started_with_SAM.py`.
