@@ -13,3 +13,17 @@
 - upload SAM example (stefan)
 - Find suitable datasets (i.e. MRI scans) (Julien)
 - Find and implement evaluation metrics (Stefan)
+
+
+# Tasks Week 3-4
+- Decide on one dataset (with Segmentation ground truth) (Valentin + Julien)
+- Build pytorch dataloader (Valentin + Julien)
+	- dataloader should return tuple of (image, segmentation_mask)
+- First fine-tuning step (Stefan)
+- Build evaluation (Stefan)
+- Further explore `django` options (Daniel)
+	- build prototype
+
+
+# Question:
+- ?
