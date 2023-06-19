@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div>
+        <h1>Image Gallery</h1>
+
+
+        <div id="gallery">
+            {% for picture in pictures %}
+                <div class="image-wrapper">
+                    <a href="{% url 'annotation' picture.id %}">
+                        <img src="{{ picture.image.url }}" width="200" height="200" alt="Image">
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .image-wrapper {
+            flex-basis: 25%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .image-wrapper img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+{% endblock %}
+
+

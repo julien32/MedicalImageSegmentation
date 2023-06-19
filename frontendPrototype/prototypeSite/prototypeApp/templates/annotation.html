@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div>
+        <h1>Annotate Image</h1>
+
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <form id="annotation-form" action="/submit" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="dotPositions" id="dotPositionsInput">
+            <textarea name="userText" id="userTextInput" placeholder="Enter your text"></textarea>
+            <button type="submit">Submit</button>
+        </form>
+
+        <button id="showPixelButton">Show Pixel Location</button>
+        <button id="printBottomRightButton">Print Bottom Right Corner</button>
+        <input id="colorPicker" type="color">
+        <button id="clearButton">Clear Dot</button>
+    </div>
+
+    <script>
+
+        const image = new Image();
+        image.src = "{{ picture.image.url }}";
+        image.addEventListener('load', () => {
+            const canvas = document.querySelector('#canvas');
+            const ctx = canvas.getContext('2d');
+
+            const aspectRatio = image.width / image.height;
+            const maxWidth = 800; // Maximum width for the canvas (adjust as needed)
+            const maxHeight = maxWidth / aspectRatio;
+
+            canvas.width = maxWidth;
+            canvas.height = maxHeight;
+
+            ctx.drawImage(image, 0, 0, maxWidth, maxHeight);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dotSize = 10; // Adjust the size of the dot as needed
+            let dotPositions = []; // Array to store dot positions
+            let dotColor = '#000000'; // Default dot color (red)
+
+            const handleMouseDown = (event) => {
+                const canvasRect = canvas.getBoundingClientRect();
+                const offsetX = event.clientX - canvasRect.left;
+                const offsetY = event.clientY - canvasRect.top;
+
+                // Store the dot position in the array
+                dotPositions.push({x: offsetX, y: offsetY});
+
+                const circle = document.createElement('div');
+                circle.classList.add('circle');
+                circle.style.left = `${offsetX - dotSize / 2}px`;
+                circle.style.top = `${offsetY - dotSize / 2}px`;
+                circle.style.backgroundColor = dotColor;
+                document.querySelector('#canvas-container').appendChild(circle);
+
+                canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
+                // Update the dot positions input value
+                document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
+            };
+
+            const canvas = document.querySelector('#canvas');
+            canvas.addEventListener('mousedown', handleMouseDown);
+
+            const showPixelButton = document.querySelector('#showPixelButton');
+            showPixelButton.addEventListener('click', () => {
+                const dot = dotPositions[dotPositions.length - 1];
+                const x = Math.round(dot.x);
+                const y = Math.round(dot.y);
+                alert(`Clicked Location: (${x}px, ${y}px)`);
+            });
+
+            const printBottomRightButton = document.querySelector('#printBottomRightButton');
+            printBottomRightButton.addEventListener('click', () => {
+                const x = canvas.width;
+                const y = canvas.height;
+                alert(`Bottom Right Corner: (${x}px, ${y}px)`);
+            });
+
+            const colorPicker = document.querySelector('#colorPicker');
+            colorPicker.addEventListener('change', (event) => {
+                dotColor = event.target.value;
+            });
+
+            const clearButton = document.querySelector('#clearButton');
+            clearButton.addEventListener('click', () => {
+                // Clear dot positions array
+                dotPositions = [];
+
+                // Remove existing dot elements from the page
+                const dots = document.querySelectorAll('.circle');
+                dots.forEach((dot) => dot.remove());
+
+                // Reattach the mouse click listener
+                canvas.addEventListener('mousedown', handleMouseDown);
+            });
+        });
+    </script>
+
+    <style>
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px; /* Adjust the maximum width as needed */
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        #canvas {
+            display: block;
+            background: url("{{ image_url }}") no-repeat;
+            background-size: cover;
+        }
+
+        .circle {
+            position: absolute;
+            width: 10px; /* Adjust the size of the dot as needed */
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        #picture {
+            max-width: 100%;
+            max-height: 400px;
+            position: relative;
+        }
+    </style>
+
+{% endblock %}
+
+
