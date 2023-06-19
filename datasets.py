@@ -5,6 +5,7 @@ import os
 import cv2
 import torchvision.transforms as transforms
 import albumentations as A
+from PIL import Image
 
 
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -116,6 +117,33 @@ class MIDOGPromptableDataset(torch.utils.data.Dataset):
         mask = transforms.Resize((1024, 1024))(mask)
 
         return image_torch, mask
+
+
+class Brain_MRI(torch.utils.data.Dataset):
+    def __init__(self, source, classname=None):
+        self.source = source
+        self.classname = classname
+        self.img_names = [os.path.join(dp, f) for dp, dn, filenames in os.walk(self.source) for f in filenames if f.endswith('.tif') and not '_mask' in f]
+
+    def __len__(self):
+        return len(self.img_names)
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        img_name = self.img_names[idx]
+        mask_name = os.path.splitext(img_name)[0] + '_mask.tif'
+        img = cv2.imread(img_name)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_torch = transforms.ToTensor()(img)
+        img_torch = img_torch*255
+        #print("\n\nTO numpy():", np.moveaxis(img_torch.numpy()*255, 0, -1), np.moveaxis(img_torch.numpy()*255, 0, -1).shape)
+        img_torch = img_torch.permute((1, 2, 0))
+        #mask = cv2.imread(mask_name)
+        mask = Image.open(mask_name)
+        mask = transforms.ToTensor()(mask)
+        mask = (mask > 1e-5).to(mask.dtype)
+        return img_torch.to(torch.uint8), mask
 
 
 
