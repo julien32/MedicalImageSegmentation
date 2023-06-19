@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My App</title>
+</head>
+<body>
+  <div>
+    <h1>Welcome to My App</h1>
+    <a href="{% url 'upload' %}"><button>Upload</button></a>
+    <a href="{% url 'gallery' %}"><button>Gallery</button></a>
+    <a href="/admin/"><button>Admin Site</button></a>
+  </div>
+
+  <div>
+    {% block content %}
+    {% endblock %}
+  </div>
+</body>
+</html>
