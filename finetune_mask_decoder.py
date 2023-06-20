@@ -17,7 +17,7 @@ from segment_anything.utils.transforms import ResizeLongestSide
 torch.manual_seed(0)
 np.random.seed(0)
 
-device = "cuda:1" if torch.cuda.is_available() else "cpu"
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 # load model
 # model_type = "vit_h" # ViT-h seems to work best
@@ -58,7 +58,9 @@ augmentations = A.Compose([
 
 
 dataset = PromptableMetaDataset([
-                                "...",
+                                'TCGA_CS_4941_19960909',
+                                'TCGA_CS_4942_19970222',
+                                'TCGA_CS_4943_20000902',
                                 ],
                                 transforms=augmentations
                             )
@@ -67,60 +69,62 @@ print(f"Training sample size: {len(dataset)}")
 
 train_loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True, num_workers=0, drop_last=True) 
 
-
-num_epochs = 30
+num_epochs = 10
 for epoch in range(num_epochs):
     epoch_losses = []
     for batch_idx, (image, gt_mask) in enumerate(train_loader):
-        
-        # process image, mask and simulate prompts
-        input_image_torch, gt_mask, coords_torch, labels_torch, input_size, original_image_size = \
-            utils.prepare_sam_inputs(
-                                    image,
-                                    gt_mask,
-                                    preprocess_transform,
-                                    device,
-                                    )
+        if gt_mask.sum() == 0:
+            continue # skip empty masks as they offer no information for us
+        else:
 
-        input_image = sam.preprocess(input_image_torch)
-        
-        # extract image embeddings
-        with torch.no_grad():
+            # process image, mask and simulate prompts
+            input_image_torch, gt_mask, coords_torch, labels_torch, input_size, original_image_size = \
+                utils.prepare_sam_inputs(
+                                        image,
+                                        gt_mask,
+                                        preprocess_transform,
+                                        device,
+                                        )
 
-            # encode image
-            # image_embedding = sam.image_encoder(input_image)
-            image_embedding = efficientnet(input_image)["layer5"]
-            image_embedding = F.pad(image_embedding, (0, 0, 0, 0, 0, 256 - image_embedding.shape[1])) # pad along channel dimension
+            input_image = sam.preprocess(input_image_torch)
+            
+            # extract image embeddings
+            with torch.no_grad():
 
-            # encode prompt
-            sparse_embeddings, dense_embeddings = sam.prompt_encoder(
-                points=(coords_torch, labels_torch),
-                boxes=None,
-                masks=None,
+                # encode image
+                # image_embedding = sam.image_encoder(input_image)
+                image_embedding = efficientnet(input_image)["layer5"]
+                image_embedding = F.pad(image_embedding, (0, 0, 0, 0, 0, 256 - image_embedding.shape[1])) # pad along channel dimension
+
+                # encode prompt
+                sparse_embeddings, dense_embeddings = sam.prompt_encoder(
+                    points=(coords_torch, labels_torch),
+                    boxes=None,
+                    masks=None,
+                )
+
+            # build masks given embeddings and prompt
+            low_res_masks, iou_predictions = sam.mask_decoder(
+                image_embeddings=image_embedding,
+                image_pe=sam.prompt_encoder.get_dense_pe(),
+                sparse_prompt_embeddings=sparse_embeddings,
+                dense_prompt_embeddings=dense_embeddings,
+                multimask_output=False,
             )
+            # upscale masks so we can compare then to the ground truth
+            upscaled_masks = sam.postprocess_masks(low_res_masks, input_size, original_image_size).to(device)
+            binary_mask = normalize(threshold(upscaled_masks, 0, 0))
 
-        # build masks given embeddings and prompt
-        low_res_masks, iou_predictions = sam.mask_decoder(
-            image_embeddings=image_embedding,
-            image_pe=sam.prompt_encoder.get_dense_pe(),
-            sparse_prompt_embeddings=sparse_embeddings,
-            dense_prompt_embeddings=dense_embeddings,
-            multimask_output=False,
-        )
-        # upscale masks so we can compare then to the ground truth
-        upscaled_masks = sam.postprocess_masks(low_res_masks, input_size, original_image_size).to(device)
-        binary_mask = normalize(threshold(upscaled_masks, 0, 0))
+            # compute loss
+            loss = focal_loss(upscaled_masks, gt_mask) + 0.1*mse_loss(upscaled_masks, gt_mask)
 
-        # compute loss
-        loss = focal_loss(upscaled_masks, gt_mask) + 0.1*mse_loss(upscaled_masks, gt_mask)
+            # backpropagate loss and update mask decoder weights
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-        # backpropagate loss and update mask decoder weights
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        epoch_losses.append(loss.item())
-    
+            epoch_losses.append(loss.item())
+        
     scheduler.step()
 
     print(f"Epoch {epoch} loss: {np.mean(epoch_losses):.4f}")

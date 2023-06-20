@@ -55,18 +55,126 @@ class PromptableMetaDataset(torch.utils.data.Dataset):
     @staticmethod
     def dataset_lookup(dataset_name):
         if dataset_name in [
-                                '...',
+                                'TCGA_CS_4941_19960909',
+                                'TCGA_CS_4942_19970222',
+                                'TCGA_CS_4943_20000902',
+                                'TCGA_CS_4944_20010208',
+                                'TCGA_CS_5393_19990606',
+                                'TCGA_CS_5395_19981004',
+                                'TCGA_CS_5396_20010302',
+                                'TCGA_CS_5397_20010315',
+                                'TCGA_CS_6186_20000601',
+                                'TCGA_CS_6188_20010812',
+                                'TCGA_CS_6290_20000917',
+                                'TCGA_CS_6665_20010817',
+                                'TCGA_CS_6666_20011109',
+                                'TCGA_CS_6667_20011105',
+                                'TCGA_CS_6668_20011025',
+                                'TCGA_CS_6669_20020102',
+                                'TCGA_DU_5849_19950405',
+                                'TCGA_DU_5851_19950428',
+                                'TCGA_DU_5852_19950709',
+                                'TCGA_DU_5853_19950823',
+                                'TCGA_DU_5854_19951104',
+                                'TCGA_DU_5855_19951217',
+                                'TCGA_DU_5871_19941206',
+                                'TCGA_DU_5872_19950223',
+                                'TCGA_DU_5874_19950510',
+                                'TCGA_DU_6399_19830416',
+                                'TCGA_DU_6400_19830518',
+                                'TCGA_DU_6401_19831001',
+                                'TCGA_DU_6404_19850629',
+                                'TCGA_DU_6405_19851005',
+                                'TCGA_DU_6407_19860514',
+                                'TCGA_DU_6408_19860521',
+                                'TCGA_DU_7008_19830723',
+                                'TCGA_DU_7010_19860307',
+                                'TCGA_DU_7013_19860523',
+                                'TCGA_DU_7014_19860618',
+                                'TCGA_DU_7018_19911220',
+                                'TCGA_DU_7019_19940908',
+                                'TCGA_DU_7294_19890104',
+                                'TCGA_DU_7298_19910324',
+                                'TCGA_DU_7299_19910417',
+                                'TCGA_DU_7300_19910814',
+                                'TCGA_DU_7301_19911112',
+                                'TCGA_DU_7302_19911203',
+                                'TCGA_DU_7304_19930325',
+                                'TCGA_DU_7306_19930512',
+                                'TCGA_DU_7309_19960831',
+                                'TCGA_DU_8162_19961029',
+                                'TCGA_DU_8163_19961119',
+                                'TCGA_DU_8164_19970111',
+                                'TCGA_DU_8165_19970205',
+                                'TCGA_DU_8166_19970322',
+                                'TCGA_DU_8167_19970402',
+                                'TCGA_DU_8168_19970503',
+                                'TCGA_DU_A5TP_19970614',
+                                'TCGA_DU_A5TR_19970726',
+                                'TCGA_DU_A5TS_19970726',
+                                'TCGA_DU_A5TT_19980318',
+                                'TCGA_DU_A5TU_19980312',
+                                'TCGA_DU_A5TW_19980228',
+                                'TCGA_DU_A5TY_19970709',
+                                'TCGA_EZ_7264_20010816',
+                                'TCGA_FG_5962_20000626',
+                                'TCGA_FG_5964_20010511',
+                                'TCGA_FG_6688_20020215',
+                                'TCGA_FG_6689_20020326',
+                                'TCGA_FG_6690_20020226',
+                                'TCGA_FG_6691_20020405',
+                                'TCGA_FG_6692_20020606',
+                                'TCGA_FG_7634_20000128',
+                                'TCGA_FG_7637_20000922',
+                                'TCGA_FG_7643_20021104',
+                                'TCGA_FG_8189_20030516',
+                                'TCGA_FG_A4MT_20020212',
+                                'TCGA_FG_A4MU_20030903',
+                                'TCGA_FG_A60K_20040224',
+                                'TCGA_HT_7473_19970826',
+                                'TCGA_HT_7475_19970918',
+                                'TCGA_HT_7602_19951103',
+                                'TCGA_HT_7605_19950916',
+                                'TCGA_HT_7608_19940304',
+                                'TCGA_HT_7616_19940813',
+                                'TCGA_HT_7680_19970202',
+                                'TCGA_HT_7684_19950816',
+                                'TCGA_HT_7686_19950629',
+                                'TCGA_HT_7690_19960312',
+                                'TCGA_HT_7692_19960724',
+                                'TCGA_HT_7693_19950520',
+                                'TCGA_HT_7694_19950404',
+                                'TCGA_HT_7855_19951020',
+                                'TCGA_HT_7856_19950831',
+                                'TCGA_HT_7860_19960513',
+                                'TCGA_HT_7874_19950902',
+                                'TCGA_HT_7877_19980917',
+                                'TCGA_HT_7879_19981009',
+                                'TCGA_HT_7881_19981015',
+                                'TCGA_HT_7882_19970125',
+                                'TCGA_HT_7884_19980913',
+                                'TCGA_HT_8018_19970411',
+                                'TCGA_HT_8105_19980826',
+                                'TCGA_HT_8106_19970727',
+                                'TCGA_HT_8107_19980708',
+                                'TCGA_HT_8111_19980330',
+                                'TCGA_HT_8113_19930809',
+                                'TCGA_HT_8114_19981030',
+                                'TCGA_HT_8563_19981209',
+                                'TCGA_HT_A5RC_19990831',
+                                'TCGA_HT_A616_19991226',
+                                'TCGA_HT_A61A_20000127',
+                                'TCGA_HT_A61B_19991127',
                             ]:
-            return MIDOGPromptableDataset("/mnt/shared/lswezel/anomaly_detection", dataset_name, split="test")
+            return Brain_MRI("/mnt/shared/lswezel/misc_datasets/lgg-mri-segmentation/kaggle_3m", dataset_name)
         else:
             raise ValueError(f"Dataset {dataset_name} not found.")
     def __len__(self):
         return self.total_num_samples
-    
+     
 
     def __getitem__(self, idx):
         img, mask = self.datasets[self.index_to_dataset[idx]].load_datum(self.available_indices_per_dataset[idx])
-
         # apply transforms here
         if self.transforms is not None:
             img, mask = _convert_for_albumentations(img, mask)
@@ -128,7 +236,7 @@ class Brain_MRI(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.img_names)
 
-    def __getitem__(self, idx):
+    def load_datum(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = self.img_names[idx]
@@ -137,13 +245,10 @@ class Brain_MRI(torch.utils.data.Dataset):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img_torch = transforms.ToTensor()(img)
         img_torch = img_torch*255
-        #print("\n\nTO numpy():", np.moveaxis(img_torch.numpy()*255, 0, -1), np.moveaxis(img_torch.numpy()*255, 0, -1).shape)
-        img_torch = img_torch.permute((1, 2, 0))
-        #mask = cv2.imread(mask_name)
+        img_torch = transforms.Resize((1024, 1024))(img_torch)
         mask = Image.open(mask_name)
         mask = transforms.ToTensor()(mask)
         mask = (mask > 1e-5).to(mask.dtype)
+        mask = transforms.Resize((1024, 1024))(mask)
+
         return img_torch.to(torch.uint8), mask
-
-
-
