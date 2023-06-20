@@ -19,18 +19,24 @@ torch.manual_seed(0)
 np.random.seed(0)
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
+PRECISION = torch.float32
+PRECISION = torch.float16
+
 
 # load model
 # model_type = "vit_h" # ViT-h seems to work best
 # sam = sam_model_registry[model_type](checkpoint="/mnt/shared/lswezel/weights/sam_vit_h_4b8939.pth") # replace with your own path
 model_type = "vit_b" # ViT-h seems to work best
 sam = sam_model_registry[model_type](checkpoint="/mnt/shared/lswezel/weights/sam_vit_b_01ec64.pth") # replace with your own path
-
 # alternative backbones
-efficientnet = IntermediateLayerGetter(torchvision.models.efficientnet_b0(pretrained=True).features, return_layers={"5":"layer5"}).to(device=device).eval()
+efficientnet = IntermediateLayerGetter(torchvision.models.efficientnet_b0(pretrained=True).features, return_layers={"5":"layer5"}).to(device=device).to(PRECISION).eval()
 
 
-sam.to(device=device)
+
+
+
+
+sam.to(device=device).to(PRECISION)
 
 
 optimizer = torch.optim.Adam(sam.mask_decoder.parameters(), lr=1e-4, weight_decay=0)
@@ -50,9 +56,9 @@ augmentations = A.Compose([
         # A.augmentations.geometric.rotate.SafeRotate(limit=20),
         A.VerticalFlip(p=0.2),
         # Texture augmentations
-        A.RandomBrightnessContrast(p=0.2),
+        # A.RandomBrightnessContrast(p=0.2),
         # A.GaussianBlur(p=0.1),
-        A.CLAHE(p=0.2),
+        # A.CLAHE(p=0.2),
         # A.ColorJitter(p=0.1),
         # A.ChannelDropout(p=0.1),
     ])
@@ -61,17 +67,22 @@ augmentations = A.Compose([
 train_dataset = PromptableMetaDataset([
                                 'TCGA_CS_4941_19960909',
                                 'TCGA_CS_4942_19970222',
-                                # 'TCGA_CS_4943_20000902',
+                                'TCGA_CS_4943_20000902',
+                                'TCGA_CS_4944_20010208',
+                                'TCGA_CS_5393_19990606',
+                                'TCGA_CS_5395_19981004',
                                 ],
-                                transforms=augmentations
+                                transforms=augmentations,
+                                precision=PRECISION,
                             )
 print(f"Training sample size: {len(train_dataset)}")
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=4, drop_last=True) 
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=4, drop_last=True) 
 
 
 test_dataset = PromptableMetaDataset([
                                 'TCGA_HT_A61B_19991127',
                                 ],
+                                precision=PRECISION,
                             )
 
 print(f"Test sample size: {len(test_dataset)}")
@@ -111,6 +122,7 @@ for epoch in range(num_epochs):
                 boxes=None,
                 masks=None,
             )
+            sparse_embeddings, dense_embeddings = sparse_embeddings.to(PRECISION), dense_embeddings.to(PRECISION)
 
         # build masks given embeddings and prompt
         low_res_masks, iou_predictions = sam.mask_decoder(
@@ -125,7 +137,7 @@ for epoch in range(num_epochs):
         binary_mask = normalize(threshold(upscaled_masks, 0, 0))
 
         # compute loss
-        loss = focal_loss(upscaled_masks, gt_mask) + 0.1*mse_loss(upscaled_masks, gt_mask)
+        loss = focal_loss(upscaled_masks, gt_mask)# + mse_loss(upscaled_masks, gt_mask)
 
         # backpropagate loss and update mask decoder weights
         optimizer.zero_grad()
@@ -171,6 +183,8 @@ for epoch in range(num_epochs):
                 boxes=None,
                 masks=None,
             )
+            sparse_embeddings, dense_embeddings = sparse_embeddings.to(PRECISION), dense_embeddings.to(PRECISION)
+
 
             # build masks given embeddings and prompt
             low_res_masks, iou_predictions = sam.mask_decoder(
