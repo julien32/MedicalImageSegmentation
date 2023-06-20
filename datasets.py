@@ -38,7 +38,7 @@ def _restore_from_albumentations(img, mask):
 
 class PromptableMetaDataset(torch.utils.data.Dataset):
     """This dataset combines multiple datasets into a single one."""
-    def __init__(self, dataset_names, transforms=None):
+    def __init__(self, dataset_names, transforms=None, precision=torch.float32):
         assert type(dataset_names) == list
         self.datasets = [self.dataset_lookup(dataset_name) for dataset_name in dataset_names]
         # build an index hierarchy that allows us to access the individual datasets
@@ -51,6 +51,7 @@ class PromptableMetaDataset(torch.utils.data.Dataset):
         assert self.total_num_samples == len(self.available_indices_per_dataset) == len(self.index_to_dataset)
 
         self.transforms = transforms
+        self.precision = precision
     
     @staticmethod
     def dataset_lookup(dataset_name):
