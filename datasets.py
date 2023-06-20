@@ -7,7 +7,6 @@ import torchvision.transforms as transforms
 import albumentations as A
 from PIL import Image
 
-
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
@@ -40,6 +39,7 @@ def _restore_from_albumentations(img, mask):
 class PromptableMetaDataset(torch.utils.data.Dataset):
     """This dataset combines multiple datasets into a single one."""
     def __init__(self, dataset_names, transforms=None):
+        assert type(dataset_names) == list
         self.datasets = [self.dataset_lookup(dataset_name) for dataset_name in dataset_names]
         # build an index hierarchy that allows us to access the individual datasets
         dataset_lengths = [len(dataset) for dataset in self.datasets]
@@ -231,7 +231,15 @@ class Brain_MRI(torch.utils.data.Dataset):
     def __init__(self, source, classname=None):
         self.source = source
         self.classname = classname
-        self.img_names = [os.path.join(dp, f) for dp, dn, filenames in os.walk(self.source) for f in filenames if f.endswith('.tif') and not '_mask' in f]
+        img_names = [os.path.join(dp, f) for dp, dn, filenames in os.walk(self.source) for f in filenames if f.endswith('.tif') and not '_mask' in f]
+        # sort out images with empty masks
+        mask_sums = [self.check_empty(os.path.splitext(img_name)[0] + '_mask.tif') for img_name in img_names]
+        self.img_names = [img_name for img_name, mask_sum in zip(img_names, mask_sums) if mask_sum]
+
+    def check_empty(self, mask_path):
+        mask = Image.open(mask_path)
+        mask = transforms.ToTensor()(mask)
+        return (mask.sum()>0).item()
 
     def __len__(self):
         return len(self.img_names)
@@ -252,3 +260,8 @@ class Brain_MRI(torch.utils.data.Dataset):
         mask = transforms.Resize((1024, 1024))(mask)
 
         return img_torch.to(torch.uint8), mask
+
+if __name__ == "__main__":
+    # For debugging only
+    dataset = PromptableMetaDataset(["TCGA_CS_4941_19960909"])
+    print(len(dataset))
