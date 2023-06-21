@@ -261,6 +261,42 @@ class Brain_MRI(torch.utils.data.Dataset):
         mask = transforms.Resize((1024, 1024))(mask)
 
         return img_torch.to(torch.uint8), mask
+    
+class Breast_MRI(torch.utils.data.Dataset):
+    def __init__(self, source, classname=None):
+        self.source = source
+        self.classname = classname
+        img_names = [os.path.join(dp, f) for dp, dn, filenames in os.walk(self.source) for f in filenames if f.endswith('.png') and not '_mask' in f]
+        # sort out images with empty masks
+        mask_sums = [self.check_empty(os.path.splitext(img_name)[0] + '_mask.png') for img_name in img_names]
+        self.img_names = [img_name for img_name, mask_sum in zip(img_names, mask_sums) if mask_sum]
+
+    def check_empty(self, mask_path):
+        mask = Image.open(mask_path)
+        mask = transforms.ToTensor()(mask)
+        return (mask.sum()>0).item()
+
+    def __len__(self):
+        return len(self.img_names)
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        img_name = self.img_names[idx]
+        mask_name = os.path.splitext(img_name)[0] + '_mask.png'
+        img = cv2.imread(img_name)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_torch = transforms.ToTensor()(img)
+        img_torch = img_torch*255
+        img_torch = transforms.Resize((1024, 1024))(img_torch)
+        mask = Image.open(mask_name)
+        mask = transforms.ToTensor()(mask)
+        mask = (mask > 1e-5).to(mask.dtype)
+        mask = transforms.Resize((1024, 1024))(mask)
+
+        return img_torch.to(torch.uint8), mask
+    
+        #Path to dataset: https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset
 
 if __name__ == "__main__":
     # For debugging only
