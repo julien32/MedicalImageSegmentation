@@ -2,16 +2,32 @@
 <html>
 <head>
   <title>My App</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #navigation {
+      display: flex;
+      justify-content: flex-end;
+      margin-right: 20px;
+    }
+
+    #navigation a {
+      margin-right: 10px;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <div>
-    <h1>Welcome to My App</h1>
-    <a href="{% url 'upload' %}"><button>Upload</button></a>
-    <a href="{% url 'gallery' %}"><button>Gallery</button></a>
-    <a href="/admin/"><button>Admin Site</button></a>
+  <div id="navigation">
+    <a href="{% url 'upload' %}">Upload</a>
+    <a href="{% url 'gallery' %}">Gallery</a>
+    <a href="/admin/">Admin Site</a>
   </div>
 
-  <div>
+  <div id="content">
     {% block content %}
     {% endblock %}
   </div>

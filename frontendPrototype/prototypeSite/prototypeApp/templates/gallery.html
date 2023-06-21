@@ -6,11 +6,15 @@
 
 
         <div id="gallery">
+
             {% for picture in pictures %}
                 <div class="image-wrapper">
                     <a href="{% url 'annotation' picture.id %}">
                         <img src="{{ picture.image.url }}" width="200" height="200" alt="Image">
                     </a>
+                    <div class="image-name">
+                        <a href="{% url 'annotation' picture.id %}">{{ picture.image.name }}</a>
+                    </div>
                 </div>
             {% endfor %}
         </div>
@@ -30,8 +34,8 @@
         }
 
         .image-wrapper {
-            flex-basis: 25%;
-            padding: 10px;
+            flex-basis: 20%;
+            padding: 5px;
             box-sizing: border-box;
         }
 
@@ -39,6 +43,13 @@
             display: block;
             max-width: 100%;
             height: auto;
+            cursor: pointer;
+        }
+
+        .image-wrapper .image-name {
+            margin-top: 5px;
+            text-decoration: underline;
+            cursor: pointer;
         }
     </style>
 {% endblock %}
