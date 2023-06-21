@@ -25,5 +25,14 @@
 	- build prototype
 
 
+# Tasks Week 5-6
+- Setup experiments on mlcloud cluster (Stefan)
+- Add second dataset (Julien)
+- Add decathlon dataset (Valentin) *optional*
+- Test inference on CPU (Stefan)
+- Test triggering inference from frontend (Stefan, Daniel, Luca)
+
+
+
 # Question:
 - ?
