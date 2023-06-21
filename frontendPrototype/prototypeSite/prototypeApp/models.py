@@ -9,4 +9,3 @@ class Picture(models.Model):
     image = models.ImageField(upload_to='images/')
     annotation = models.TextField()
 
-
