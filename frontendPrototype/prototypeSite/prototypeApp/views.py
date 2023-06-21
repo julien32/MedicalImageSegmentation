@@ -36,10 +36,6 @@ def submit_annotation(request):
         print('Dot Positions:', dot_positions)
         print('User Text:', user_text)
 
-        # Process the dot positions and user text as needed
-        # For example, you can save them to the database or perform further calculations
-
-        # Return a response indicating the submission was successful
         return HttpResponse('Annotation submitted successfully.')
 
     # Return an error response if the request method is not POST

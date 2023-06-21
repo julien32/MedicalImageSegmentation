@@ -4,27 +4,70 @@
   <title>My App</title>
   <style>
     body {
+      margin: 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
     }
 
-    #navigation {
+    #toolbar {
       display: flex;
-      justify-content: flex-end;
-      margin-right: 20px;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background-color: #f0f0f0;
     }
 
-    #navigation a {
+    #toolbar-left {
+      display: flex;
+      align-items: center;
+    }
+
+    #toolbar-left a {
       margin-right: 10px;
-      text-decoration: underline;
+      text-decoration: none;
+      color: #000;
+    }
+
+    #toolbar-right {
+      display: flex;
+      align-items: center;
+    }
+
+    #toolbar-right a {
+      margin-right: 10px;
+      text-decoration: none;
+      color: #000;
+    }
+
+    #toolbar-right a::after {
+      content: "|";
+      margin-left: 10px;
+      color: #000;
+    }
+
+    #toolbar-right a:last-child::after {
+      content: none;
+    }
+
+    #toolbar-left a:first-child {
+      font-size: 24px;
+      font-weight: bold;
+      border-right: none;
+      padding-right: 0;
     }
   </style>
 </head>
 <body>
-  <div id="navigation">
-    <a href="{% url 'upload' %}">Upload</a>
-    <a href="{% url 'gallery' %}">Gallery</a>
-    <a href="/admin/">Admin Site</a>
+  <div id="toolbar">
+    <div id="toolbar-left">
+      <a href="/">My App</a>
+    </div>
+    <div id="toolbar-right">
+      <a href="{% url 'upload' %}">Upload</a>
+      <a href="{% url 'gallery' %}">Gallery</a>
+      <a href="/admin/">Admin Site</a>
+    </div>
   </div>
 
   <div id="content">
