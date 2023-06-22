@@ -1,3 +1,4 @@
+*.pth
 example_prediction_*
 __pycache__/*
 nohup.out

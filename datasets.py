@@ -167,13 +167,13 @@ class PromptableMetaDataset(torch.utils.data.Dataset):
                                 'TCGA_HT_A61A_20000127',
                                 'TCGA_HT_A61B_19991127',
                             ]:
-            return Brain_MRI("/mnt/shared/lswezel/misc_datasets/lgg-mri-segmentation/kaggle_3m", dataset_name)
+            return Brain_MRI("/mnt/shared/lswezel/misc_datasets/lgg-mri-segmentation/kaggle_3m", dataset_name) # TODO pass path as argument
         elif dataset_name in [
             'benign',
             'malignant',
             'normal',
         ]:
-            return Breast_MRI("path", dataset_name)
+            return Breast_MRI("/mnt/shared/lswezel/misc_datasets/Dataset_BUSI_with_GT", dataset_name)
         else:
             raise ValueError(f"Dataset {dataset_name} not found.")
     def __len__(self):
@@ -285,7 +285,7 @@ class Breast_MRI(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.img_names)
 
-    def __getitem__(self, idx):
+    def load_datum(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_name = self.img_names[idx]
