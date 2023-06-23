@@ -14,27 +14,18 @@
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/akata/aoq833/ad/lib
 source /home/akata/aoq833/ad/bin/activate
 
-# DEBUG
-datapath=/mnt/qb/work/akata/aoq833/vision_data/ datasets=('Cable' 'Capacitor' 'Casting' 'Console' 'Cylinder' 'Electronics' 'Groove' 'Hemisphere' 'Lens' 'PCB_1' 'PCB_2' 'Ring' 'Screw' 'Wood')
+# # DEBUG
+# datapath=/mnt/qb/work/akata/aoq833/vision_data/ datasets=('Cable' 'Capacitor' 'Casting' 'Console' 'Cylinder' 'Electronics' 'Groove' 'Hemisphere' 'Lens' 'PCB_1' 'PCB_2' 'Ring' 'Screw' 'Wood')
 
 
-dataset_flags=($(for dataset in "${datasets[@]}"; do echo '-d '$dataset; done))
+# dataset_flags=($(for dataset in "${datasets[@]}"; do echo '-d '$dataset; done))
 
-# make patchcore module importable
-export PYTHONPATH=../src
-
-
-
-python ../bin/run_patchcore.py --gpu 0 --seed 0 --save_vision_submission --save_segmentation_images \
---log_group vision --log_project sandbox /mnt/qb/work/akata/aoq833/results  \
-patch_core -b efficientnet_b0 -le features.5 -le features.6 --faiss_on_gpu \
---pretrain_embed_dimension -1 --target_embed_dimension -1 --anomaly_scorer_num_nn 1 --patchsize 1 \
-memorybank_sampler --nominal_memorybank_downsampling_factor 0.3 --nok_memorybank_downsampling_factor 0.75 \
---use_ok_patches_in_nok_imgs --num_flow_nodes 1 --flow_training_epochs 3  --training_method flow \
---feature_sampler PCA --feature_downsampling_factor 0.1 approx_greedy_coreset \
-dataset --train_val_split -1 --image_downsampling_factor 0.3 "${dataset_flags[@]}" augmented_coco_ad_dataset $datapath
+# # make patchcore module importable
+# export PYTHONPATH=../src
 
 
+
+python finetune_mask_decoder.py 
 
 
 
