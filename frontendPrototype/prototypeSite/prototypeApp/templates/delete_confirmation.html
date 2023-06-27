@@ -1,0 +1,22 @@
+<!-- delete_confirmation.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Delete Confirmation</h1>
+
+  <p>Are you sure you want to delete the following images?</p>
+  <ul>
+    {% for image_id in selected_images %}
+      <li>{{ image_id }}</li>
+    {% endfor %}
+  </ul>
+
+  <form method="post" action="{% url 'delete_images_confirm' %}">
+    {% csrf_token %}
+    <input type="hidden" name="selected_images" value="{{ selected_images|join:',' }}">
+    <button type="submit">Confirm Delete</button>
+  </form>
+
+  <a href="{% url 'gallery' %}">Cancel</a>
+{% endblock %}

@@ -18,22 +18,27 @@
 
         <div id="gallery-container">
             <h1 style="margin-bottom: 1.5rem; text-align: center;">Image Gallery</h1>
-            <div id="image-gallery">
-                {% for picture in pictures %}
-                    <div class="gallery-item">
-                        <a href="{% url 'annotation' picture.id %}">
-                            <img src="{{ picture.image.url }}" alt="Image">
-                        </a>
-                        <div class="image-title">
-                            <a href="{% url 'annotation' picture.id %}" class="text-link">
-                                {{ picture.image.name }}
+            <form method="post" action="{% url 'delete_images' %}">
+                {% csrf_token %}
+                <div id="image-gallery">
+                    {% for picture in pictures %}
+                        <div class="gallery-item">
+                            <a href="{% url 'annotation' picture.id %}">
+                                <img src="{{ picture.image.url }}" alt="Image">
                             </a>
+                            <div class="image-title">
+                                <a href="{% url 'annotation' picture.id %}" class="text-link">
+                                    {{ picture.image.name }}
+                                </a>
+                            </div>
+                            <input type="checkbox" name="selected_images" value="{{ picture.id }}">
                         </div>
-                    </div>
-                    {% empty %}
-                    <p>No images found in the gallery.</p>
-                {% endfor %}
-            </div>
+                        {% empty %}
+                        <p>No images found in the gallery.</p>
+                    {% endfor %}
+                </div>
+                <button type="submit">Delete Selected Images</button>
+            </form>
         </div>
     </div>
 
