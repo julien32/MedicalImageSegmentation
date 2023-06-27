@@ -4,6 +4,11 @@ from django.shortcuts import render, redirect
 from .models import Picture
 
 
+# ToDo: Add delete button for images in gallery
+# ToDo: Remove upload view
+# ToDo: Add specific annotation view
+# ToDo: Test script functionality
+
 def upload_view(request):
     if request.method == 'POST':
         images = request.FILES.getlist('images')
