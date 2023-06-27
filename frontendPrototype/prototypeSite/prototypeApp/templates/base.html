@@ -1,78 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My App</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-    }
+    <title>My App</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+        }
 
-    #toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      background-color: #f0f0f0;
-    }
+        #toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
 
-    #toolbar-left {
-      display: flex;
-      align-items: center;
-    }
+        #toolbar-left {
+            display: flex;
+            align-items: center;
+        }
 
-    #toolbar-left a {
-      margin-right: 10px;
-      text-decoration: none;
-      color: #000;
-    }
+        #toolbar-left a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #000;
+        }
 
-    #toolbar-right {
-      display: flex;
-      align-items: center;
-    }
+        #toolbar-right {
+            display: flex;
+            align-items: center;
+        }
 
-    #toolbar-right a {
-      margin-right: 10px;
-      text-decoration: none;
-      color: #000;
-    }
+        #toolbar-right a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #000;
+        }
 
-    #toolbar-right a::after {
-      content: "|";
-      margin-left: 10px;
-      color: #000;
-    }
+        #toolbar-right a::after {
+            content: "|";
+            margin-left: 10px;
+            color: #000;
+        }
 
-    #toolbar-right a:last-child::after {
-      content: none;
-    }
+        #toolbar-right a:last-child::after {
+            content: none;
+        }
 
-    #toolbar-left a:first-child {
-      font-size: 24px;
-      font-weight: bold;
-      border-right: none;
-      padding-right: 0;
-    }
-  </style>
+        #toolbar-left a:first-child {
+            font-size: 24px;
+            font-weight: bold;
+            border-right: none;
+            padding-right: 0;
+        }
+    </style>
 </head>
 <body>
-  <div id="toolbar">
+<div id="toolbar">
     <div id="toolbar-left">
-      <a href="/">My App</a>
+        <a href="/">My App</a>
     </div>
     <div id="toolbar-right">
-      <a href="{% url 'upload' %}">Upload</a>
-      <a href="{% url 'gallery' %}">Gallery</a>
-      <a href="/admin/">Admin Site</a>
+        <a href="{% url 'upload' %}">Upload</a>
+        <a href="{% url 'gallery' %}">Gallery</a>
+        <a href="/admin/">Admin Site</a>
     </div>
-  </div>
+</div>
 
-  <div id="content">
+<div id="content">
     {% block content %}
     {% endblock %}
-  </div>
+</div>
 </body>
 </html>
