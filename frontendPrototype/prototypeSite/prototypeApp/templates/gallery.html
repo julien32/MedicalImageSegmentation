@@ -3,19 +3,21 @@
 {% block content %}
     <div id="main-container">
         <div id="upload-container">
-            <h2>Upload Image</h2>
-            <form method="post" enctype="multipart/form-data">
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Upload Pictures</h1>
+            <form method="post" enctype="multipart/form-data" style="text-align: center;">
                 {% csrf_token %}
                 <div class="form-group">
 
-                    <input type="file" name="image" accept="image/*" multiple required>
-                    <input type="submit" value="Upload">
+                    <input type="file" name="images" accept="image/*" multiple required style="margin-bottom: 1rem;">
+                    <br>
+                    <input type="submit" value="Upload" onclick="animateButton(this);"
+                           style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
                 </div>
             </form>
         </div>
 
         <div id="gallery-container">
-            <h2>Gallery</h2>
+            <h2>Image Gallery</h2>
             <div id="image-gallery">
                 {% for picture in pictures %}
                     <div class="gallery-item">
@@ -23,8 +25,8 @@
                             <img src="{{ picture.image.url }}" alt="Image">
                         </a>
                         <div class="image-title">
-                            <a href="{% url 'annotation' picture.id %}">
-                                {{ picture.image.name|truncatechars:20}}
+                            <a href="{% url 'annotation' picture.id %}" class="text-link">
+                                {{ picture.image.name}}
                             </a>
                         </div>
                     </div>
@@ -35,7 +37,28 @@
         </div>
     </div>
 
+    <script>
+        function animateButton(button) {
+            button.classList.add('animated');
+            setTimeout(function () {
+                button.classList.remove('animated');
+            }, 500);
+        }
+    </script>
+
     <style>
+
+        @keyframes buttonAnimation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
 
         #main-container {
             display: flex;
@@ -86,26 +109,33 @@
         }
 
         #image-gallery {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            justify-items: center;
         }
 
-        #image-gallery a {
-            margin: 5px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        #image-gallery img {
-            width: 200px;
-            height: 200px;
-        }
 
         .gallery-item {
-            text-align: center;
-            margin-bottom: 20px;
-            width: 200px; /* Adjust the width as needed */
-            margin-right: 10px; /* Add space between images */
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover {
+            /* transform: translate3d(-30px); */
+            transform: scale(1.2);
+        }
+
+        .gallery-item img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
         }
 
         .image-title {
@@ -117,19 +147,16 @@
             text-overflow: ellipsis;
         }
 
+        .text-link {
+            text-decoration: none;
+            color: #666;
+            cursor: pointer;
+        }
+
         #gallery-container {
             flex-basis: 60%; /* Adjust the width as needed */
             text-align: center;
             position: relative; /* Add position relative */
-        }
-
-
-        #image-gallery {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px; /* Add spacing between gallery items */
-            border-left: 1px solid #ccc; /* Add vertical border */
         }
 
     </style>

@@ -14,6 +14,12 @@ def upload_view(request):
 
 
 def gallery_view(request):
+    if request.method == 'POST':
+        images = request.FILES.getlist('images')
+        for image in images:
+            Picture.objects.create(image=image)
+        return redirect('gallery')
+
     pictures = Picture.objects.all()
     return render(request, 'gallery.html', {'pictures': pictures})
 

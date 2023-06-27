@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h1>Image Gallery</h1>
+
+        <div id="image-gallery">
+            {% for picture in pictures %}
+                <div class="gallery-item">
+                    <a href="{% url 'annotation' picture.id %}">
+                        <img src="{{ picture.image.url }}" alt="Image">
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            justify-items: center;
+        }
+
+        .gallery-item {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover {
+            /* transform: translate3d(-30px); */
+            transform: scale(1.2);
+        }
+
+        .gallery-item img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+{% endblock %}
+
+
+OLD____________________________
+
+#image-gallery {
+display: flex;
+flex-wrap: wrap;
+}
+
+#image-gallery a {
+margin: 5px;
+text-decoration: none;
+display: inline-block;
+}
+
+#image-gallery img {
+width: 200px;
+height: 200px;
+}
+
+#image-gallery {
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+gap: 10px; /* Add spacing between gallery items */
+border-left: 1px solid #ccc; /* Add vertical border */
+}
+
+.gallery-item {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 200px; /* Adjust the width as needed */
+            margin-right: 10px; /* Add space between images */
+        }
+
