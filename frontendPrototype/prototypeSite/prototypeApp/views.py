@@ -1,3 +1,5 @@
+import os
+
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
@@ -5,18 +7,8 @@ from .models import Picture
 
 
 # ToDo: Add delete button for images in gallery
-# ToDo: Remove upload view
 # ToDo: Add specific annotation view
 # ToDo: Test script functionality
-
-def upload_view(request):
-    if request.method == 'POST':
-        images = request.FILES.getlist('images')
-        for image in images:
-            Picture.objects.create(image=image)
-        return redirect('gallery')
-    return render(request, 'upload.html')
-
 
 def gallery_view(request):
     if request.method == 'POST':
@@ -27,6 +19,26 @@ def gallery_view(request):
 
     pictures = Picture.objects.all()
     return render(request, 'gallery.html', {'pictures': pictures})
+
+
+def delete_images(request):
+    if request.method == 'POST':
+        selected_images = request.POST.getlist('selected_images')
+        return render(request, 'delete_confirmation.html', {'selected_images': selected_images})
+    return redirect('gallery')
+
+
+def delete_images_confirm(request):
+    if request.method == 'POST':
+        selected_images = request.POST.get('selected_images').split(',')
+        for image_id in selected_images:
+            picture = Picture.objects.get(id=image_id)
+            # Delete the image file from the image folder
+            if os.path.exists(picture.image.path):
+                os.remove(picture.image.path)
+            # Delete the Picture object from the database
+            picture.delete()
+    return redirect('gallery')
 
 
 def annotation_view(request, picture_id):
