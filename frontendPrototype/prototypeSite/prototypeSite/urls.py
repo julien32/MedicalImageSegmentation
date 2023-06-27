@@ -28,6 +28,7 @@ urlpatterns = [
     path('gallery/', views.gallery_view, name='gallery'),
     path('annotation/<int:picture_id>/', views.annotation_view, name='annotation'),
     path('submit', views.submit_annotation, name='submit_annotation'),
+    path('', views.base, name='base'),
     path('', views.base, name='base')
 ]
 
