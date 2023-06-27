@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Image Segmentation</h1>
+
+    <div class="step">
+        <div class="step-title">Step 1: Image Preprocessing</div>
+        <div class="step-description">
+            <p>Image segmentation starts with preprocessing the input image to enhance its quality and remove noise.
+                Common preprocessing techniques include:</p>
+            <ul>
+                <li>Image resizing</li>
+                <li>Image denoising</li>
+                <li>Contrast adjustment</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2: Feature Extraction</div>
+        <div class="step-description">
+            <p>In this step, relevant features are extracted from the preprocessed image. These features can include
+                color, texture, and shape information. Common techniques for feature extraction are:</p>
+            <ul>
+                <li>Color space transformation</li>
+                <li>Texture analysis</li>
+                <li>Edge detection</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 3: Segmentation Algorithm</div>
+        <div class="step-description">
+            <p>The segmentation algorithm is applied to the extracted features to partition the image into meaningful
+                regions or objects. Some popular segmentation algorithms are:</p>
+            <ul>
+                <li>Thresholding</li>
+                <li>Region growing</li>
+                <li>Clustering (e.g., k-means)</li>
+                <li>Graph-cut-based methods</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 4: Postprocessing</div>
+        <div class="step-description">
+            <p>After the initial segmentation, postprocessing techniques can be applied to refine the results and
+                improve the segmentation quality. Common postprocessing methods include:</p>
+            <ul>
+                <li>Region merging</li>
+                <li>Boundary smoothing</li>
+                <li>Object labeling</li>
+            </ul>
+        </div>
+    </div>
+
+    <style>
+
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        .step {
+            margin-bottom: 20px;
+        }
+
+        .step-title {
+            font-weight: bold;
+        }
+
+        .step-description {
+            margin-top: 5px;
+        }
+    </style>
+{% endblock %}
