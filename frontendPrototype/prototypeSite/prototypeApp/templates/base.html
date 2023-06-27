@@ -15,8 +15,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background-color: #4CAF50;
             padding: 10px;
-            background-color: #f0f0f0;
+            color: #fff;
         }
 
         #toolbar-left {
@@ -27,24 +28,25 @@
         #toolbar-left a {
             margin-right: 10px;
             text-decoration: none;
-            color: #000;
+            color: #fff;
         }
 
         #toolbar-right {
             display: flex;
             align-items: center;
+            color: #fff;
         }
 
         #toolbar-right a {
             margin-right: 10px;
             text-decoration: none;
-            color: #000;
+            color: #fff;
         }
 
         #toolbar-right a::after {
             content: "|";
             margin-left: 10px;
-            color: #000;
+            color: #fff;
         }
 
         #toolbar-right a:last-child::after {
@@ -65,8 +67,7 @@
         <a id="header" href="/">My App</a>
     </div>
     <div id="toolbar-right">
-        <a href="{% url 'upload' %}">Upload</a>
-        <a href="{% url 'gallery' %}">Gallery</a>
+        <a href="{% url 'gallery' %}">Images</a>
         <a href="/admin/">Admin Site</a>
     </div>
 </div>
