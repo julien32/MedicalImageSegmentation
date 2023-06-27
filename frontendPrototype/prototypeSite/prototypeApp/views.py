@@ -6,7 +6,6 @@ from django.shortcuts import render, redirect
 from .models import Picture
 
 
-# ToDo: Add delete button for images in gallery
 # ToDo: Add specific annotation view
 # ToDo: Test script functionality
 

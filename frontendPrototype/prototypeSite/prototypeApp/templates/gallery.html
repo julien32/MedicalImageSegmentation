@@ -8,17 +8,23 @@
                 {% csrf_token %}
                 <div class="form-group">
 
-                    <input type="file" name="images" accept="image/*" multiple required style="margin-bottom: 1rem;">
+                    <input type="file" name="images" accept="image/*" multiple required style="margin-bottom: 1rem; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
                     <br>
                     <input type="submit" value="Upload" onclick="animateButton(this);"
                            style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
                 </div>
             </form>
+
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Delete Images</h1>
+
+                <button id="delete-button" type="submit" form="delete-form" style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
+                Delete Selected Images</button>
+
         </div>
 
         <div id="gallery-container">
             <h1 style="margin-bottom: 1.5rem; text-align: center;">Image Gallery</h1>
-            <form method="post" action="{% url 'delete_images' %}">
+            <form id="delete-form" method="post" action="{% url 'delete_images' %}">
                 {% csrf_token %}
                 <div id="image-gallery">
                     {% for picture in pictures %}
@@ -37,7 +43,6 @@
                         <p>No images found in the gallery.</p>
                     {% endfor %}
                 </div>
-                <button type="submit">Delete Selected Images</button>
             </form>
         </div>
     </div>
@@ -106,7 +111,18 @@
 
 
         input[type="submit"] {
-            background-color: #4CAF50;
+            background-color: #4CAF50FF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #delete-button {
+            background-color: #4CAF50FF;
             color: #fff;
             padding: 10px 20px;
             border: none;
@@ -145,11 +161,6 @@
             margin-left: 25px;
         }
 
-        .gallery-item:hover {
-            /* transform: translate3d(-30px); */
-            transform: scale(1.2);
-        }
-
         .gallery-item img {
             display: block;
             width: 100%;
@@ -179,4 +190,26 @@
         }
 
     </style>
+
+    <script>
+     // Enable delete button if at least one image is selected
+    const deleteForm = document.getElementById('delete-form');
+    const deleteButton = document.getElementById('delete-button');
+    const checkboxes = deleteForm.querySelectorAll('input[type="checkbox"]');
+
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const selectedImages = Array.from(checkboxes).some(cb => cb.checked);
+        deleteButton.disabled = !selectedImages;
+      });
+    });
+
+    // Prevent form submission if no checkbox is checked
+    deleteForm.addEventListener('submit', (event) => {
+      if (!Array.from(checkboxes).some(cb => cb.checked)) {
+        event.preventDefault();
+        alert('Please select at least one image to delete.');
+      }
+    });
+  </script>
 {% endblock %}
