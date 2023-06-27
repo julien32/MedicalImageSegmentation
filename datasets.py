@@ -38,9 +38,10 @@ def _restore_from_albumentations(img, mask):
 
 class PromptableMetaDataset(torch.utils.data.Dataset):
     """This dataset combines multiple datasets into a single one."""
-    def __init__(self, dataset_names, transforms=None, precision=torch.float32):
+    def __init__(self, src_dir, dataset_names, transforms=None, precision=torch.float32):
         assert type(dataset_names) == list
-        self.datasets = [self.dataset_lookup(dataset_name) for dataset_name in dataset_names]
+        self.src_dir = src_dir
+        self.datasets = [self.dataset_lookup(self.src_dir, dataset_name) for dataset_name in dataset_names]
         # build an index hierarchy that allows us to access the individual datasets
         dataset_lengths = [len(dataset) for dataset in self.datasets]
         self.available_indices_per_dataset = [item for sublist in [[j for j in range(l)] for l in dataset_lengths] for item in sublist]
@@ -54,7 +55,7 @@ class PromptableMetaDataset(torch.utils.data.Dataset):
         self.precision = precision
     
     @staticmethod
-    def dataset_lookup(dataset_name):
+    def dataset_lookup(src_dir, dataset_name):
         if dataset_name in [
                                 'TCGA_CS_4941_19960909',
                                 'TCGA_CS_4942_19970222',
@@ -167,13 +168,13 @@ class PromptableMetaDataset(torch.utils.data.Dataset):
                                 'TCGA_HT_A61A_20000127',
                                 'TCGA_HT_A61B_19991127',
                             ]:
-            return Brain_MRI("/mnt/shared/lswezel/misc_datasets/lgg-mri-segmentation/kaggle_3m", dataset_name) # TODO pass path as argument
+            return Brain_MRI(f"{src_dir}/lgg-mri-segmentation/kaggle_3m", dataset_name) # TODO pass path as argument
         elif dataset_name in [
             'benign',
             'malignant',
             'normal',
         ]:
-            return Breast_MRI("/mnt/shared/lswezel/misc_datasets/Dataset_BUSI_with_GT", dataset_name)
+            return Breast_MRI(f"{src_dir}/Dataset_BUSI_with_GT", dataset_name)
         else:
             raise ValueError(f"Dataset {dataset_name} not found.")
     def __len__(self):
