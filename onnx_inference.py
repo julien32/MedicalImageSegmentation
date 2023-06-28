@@ -95,3 +95,6 @@ for i, img_path in enumerate(image_paths):
 
     # for debugging... see if correct shape is returned
     print(masks.shape)
+
+    # TODO (swezel) save to predictions dir
+    
