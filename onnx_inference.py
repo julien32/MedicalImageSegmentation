@@ -5,31 +5,30 @@ from segment_anything import sam_model_registry, SamPredictor
 import onnxruntime
 import argparse
 import utils
+import pandas as pd
+import matplotlib.pyplot as plt
+import utils
 
 parser = argparse.ArgumentParser("Run onnxruntime inference sess")
 parser.add_argument("--onnx-checkpoint",
                     type=str,
                     required=True,
                     help="The path to the SAM model checkpoint.")
-parser.add_argument("--imagepaths",
-                    type=str,
-                    nargs='+',
-                    required=True,
-                    help="The image you want to run inference on.")
-parser.add_argument("--prompts-y",
-                    type=int,
-                    nargs='+',
-                    help="The y coords of the prompt.")
-parser.add_argument("--prompts-x",
-                    type=int,
-                    nargs='+',
-                    help="The x coords of the prompt.")
+parser.add_argument(
+    "--input_df",
+    type=str,
+    required=True,
+    help=
+    "The path to the input dataframe, where all annoated paths and prompts are stored."
+)
+
 args = parser.parse_args()
 
-image_paths = args.imagepaths
+user_input = pd.read_csv(args.input_df)
 
-prompts_y = args.prompts_y
-prompts_x = args.prompts_x
+image_paths = user_input['filepath'].tolist()
+prompts_y = user_input['y'].tolist()
+prompts_x = user_input['x'].tolist()
 
 assert len(prompts_y) == len(prompts_x) == len(
     image_paths)  # make sure there is a prompt for each image (and vice versa)
@@ -44,13 +43,21 @@ sam = sam_model_registry[model_type](checkpoint=checkpoint)
 sam.to(device='cpu')
 predictor = SamPredictor(sam)
 
-for i, img_path in enumerate(image_paths):
+plot_imgs = []
+plot_masks = []
+plot_points = []
+plot_labels = []
+plot_paths = []
 
-    # iterate over image dir
-    # img_path = args.imagepath
+for i, img_path in enumerate(image_paths):
+    plot_paths.append(img_path)
+
+    # iterate over images
     # load image
     image = cv2.imread(img_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    plot_imgs.append(image.copy())
 
     # process input for SAM
     input_image_torch, input_size, original_image_size = \
@@ -63,9 +70,11 @@ for i, img_path in enumerate(image_paths):
     y_coord = prompts_y[i]
     x_coord = prompts_x[i]
     input_point = np.array([[y_coord, x_coord]])
+    plot_points.append(input_point.copy())
 
     # assign label
     input_label = np.array([1])
+    plot_labels.append(input_label.copy())
 
     # convert coords to onnx compatible format
     onnx_coord = np.concatenate(
@@ -93,8 +102,17 @@ for i, img_path in enumerate(image_paths):
     masks, _, low_res_logits = ort_session.run(None, ort_inputs)
     masks = masks > predictor.model.mask_threshold
 
-    # for debugging... see if correct shape is returned
-    print(masks.shape)
+    # store predicted mask to be shown later
+    plot_masks.append(masks[0])
 
-    # TODO (swezel) save to predictions dir
-    
+# save predictions
+for j in range(len(plot_imgs)):
+    fig, ax = plt.subplots()
+    ax.imshow(plot_imgs[j])
+    utils.show_mask(plot_masks[j], ax)
+    utils.show_points(plot_points[j], plot_labels[j], ax)
+    ax.axis('off')
+    plt.savefig(os.path.join("predictions",
+                             f"prediction_{plot_paths[j].split('/')[-1]}"),
+                bbox_inches='tight',
+                pad_inches=0)

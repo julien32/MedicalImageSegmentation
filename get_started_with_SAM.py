@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import os
+from utils import show_masks, show_points
 from PIL import Image
 import torchvision.transforms as transforms
 import sys
