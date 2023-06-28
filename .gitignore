@@ -7,3 +7,4 @@ segment_anything/__pycache__/*
 segment_anything/modeling/__pycache__/*
 segment_anything/utils/__pycache__/*
 *.png
+predictions/*.jpg
