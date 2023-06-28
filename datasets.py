@@ -175,6 +175,15 @@ class PromptableMetaDataset(torch.utils.data.Dataset):
             'normal',
         ]:
             return Breast_MRI(f"{src_dir}/Dataset_BUSI_with_GT", dataset_name)
+        elif dataset_name in [
+            'QaTa-COV19-v1',
+            'QaTa-COV19-v2'
+        ]:
+            if dataset_name == 'QaTa-COV19-v2':
+                return Lungs_MRI(f"{src_dir}/QaTa-COV19/", dataset_name + 'Train Set')
+            
+            return Lungs_MRI(f"{src_dir}/QaTa-COV19/", dataset_name)
+            
         else:
             raise ValueError(f"Dataset {dataset_name} not found.")
     def __len__(self):
