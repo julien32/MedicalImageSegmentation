@@ -8,6 +8,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from scipy.ndimage.morphology import distance_transform_edt
 
+import sys
+sys.path.append("..")
+
+
 class ThresholdTransform(object):
   def __init__(self, threshold):
     self.threshold = threshold  # input threshold for [0..255] gray level, convert to [0..1]
@@ -182,6 +186,18 @@ def prepare_sam_inputs(image, gt_mask, preprocess_transform, device):
 
         return input_image_torch, gt_mask, coords_torch, labels_torch, input_size, original_image_size
 
+
+
+
+def prepare_sam_inputs_for_inference(image, device="cpu"):
+        original_image_size = image.shape[:2]
+        input_image_torch = torch.as_tensor(image, device=device)
+        input_image_torch = input_image_torch.permute(2, 0, 1).contiguous()
+        input_size = tuple(input_image_torch.shape[-2:])
+
+        return input_image_torch, input_size, original_image_size
+
+
 def imagenet_standardize(x: torch.Tensor) -> torch.Tensor:
         """Normalize pixel values and pad to a square input."""
         # Normalize colors
@@ -195,3 +211,5 @@ def imagenet_standardize(x: torch.Tensor) -> torch.Tensor:
         # padw = self.image_encoder.img_size - w
         # x = F.pad(x, (0, padw, 0, padh))
         return x
+
+
