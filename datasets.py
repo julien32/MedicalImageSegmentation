@@ -6,6 +6,7 @@ import cv2
 import torchvision.transforms as transforms
 import albumentations as A
 from PIL import Image
+import imageio
 
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
@@ -351,6 +352,65 @@ class Lungs_MRI(torch.utils.data.Dataset):
     # root_dir = '/Users/julien/Downloads/archive-4/QaTa-COV19/QaTa-COV19-v1'
     # root_dir2 = '/Users/julien/Downloads/archive-4/QaTa-COV19/QaTa-COV19-v2/Train Set'
     #Path to dataset https://www.kaggle.com/datasets/aysendegerli/qatacov19-dataset
+
+
+class Decathlon_Heart(torch.utils.data.Dataset):
+    def __init__(self, source='path/to/decathlon', classname=None):
+        self.discipline = "Task02_Heart"
+        self.source = source
+        self.classname = classname
+        if not os.path.exists(f"{self.source}/{self.discipline}"):
+            self.download_and_extract()
+        self.imgs, self.labels = self.get_img_label_names()
+    
+    def __len__(self):
+        return len(self.imgs)
+
+    def download_and_extract(self):
+        url = f"https://msd-for-monai.s3-us-west-2.amazonaws.com/{self.discipline}.tar"
+        directory = self.source
+        command = f"wget -P {directory} {url}"
+        os.system(command)
+        command = f"tar -xvf {self.discipline}.tar"
+        os.system(command)
+    
+    def get_img_label_names(self):
+        with open(f'{self.source}/{self.discipline}/dataset.json', 'r') as f:
+            datainfo = json.load(f)
+        images = []
+        labels = []
+        for img_label_pair in datainfo['training']:
+            images.append(f"{self.source}/{self.discipline}{img_label_pair['image'].split('.')[1]}.nii.gz")
+            labels.append(f"{self.source}/{self.discipline}{img_label_pair['label'].split('.')[1]}.nii.gz")
+        return images, labels
+    
+    def visualize(self, idx, fps=5):
+        nii_img = nib.load(self.imgs[idx])
+        nii_data = nii_img.get_fdata()
+        nii_label = nib.load(self.labels[idx])
+        nii_label_data = nii_label.get_fdata()
+        dim = nii_data.shape
+        gif_data = [np.tile(np.tile(nii_data[:, :, i][..., np.newaxis], (1, 1, 3)), (1, 2, 1)) for i in range(dim[2])]
+        for i in range(dim[2]):
+            mask = nii_label_data[:, :, i] == 1.0
+            gif_data[i][:dim[0], :dim[1], :][mask] = [255, 0, 0]
+        imageio.mimsave(f'{self.source}/{self.discipline}/{idx}.gif', gif_data, fps=fps)
+        print(f'Visualization saved at destination: {self.source}/{self.discipline}/{idx}.gif')
+
+    def __getitem__(self, idx):
+        nii_img = nib.load(self.imgs[idx])
+        nii_data = nii_img.get_fdata()
+        nii_label = nib.load(self.labels[idx])
+        nii_label_data = nii_label.get_fdata()
+        label_argmax = np.argmax(np.sum(nii_label_data, axis=(0, 1)))
+        image = np.tile(nii_data[:, :, label_argmax][..., np.newaxis], (1, 1, 3))
+        image = transforms.ToTensor()(image)
+        image = transforms.Resize((1024, 1024))(image)
+        image = image.permute(1, 2, 0)
+        mask = transforms.ToTensor()(nii_label_data[:, :, label_argmax])
+        mask = transforms.Resize((1024, 1024))(mask)
+        return image, mask
+
 
 if __name__ == "__main__":
     # For debugging only
