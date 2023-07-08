@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 import sys
 sys.path.append("..")
 from segment_anything import sam_model_registry, SamPredictor
-from datasets import Decathlon_Heart
+from datasets import *
 import imageio
 
 
@@ -50,12 +50,28 @@ def SAM_prediction(input_image, gt_mask, weight_path=None, plot_filename='exampl
         image_prediction[point[0]-5:point[0]+5, point[1]+1024-5:point[1]+1024+5, :] = [0, 255, 0]
     imageio.imsave(plot_filename, image_prediction)
 
-########################################
-#### Prediction for Decathlon Heart ####
-########################################
-decathlon_heart_dataloader = Decathlon_Heart(source='datasets/decathlon/heart', classname='decathlonheart')
-#decathlon_heart_dataloader.visualize(0)
-for i, (image, mask) in enumerate(decathlon_heart_dataloader):
-    print(f"Predict {i}")
-    SAM_prediction(image.numpy(), mask.numpy(), weight_path='/local/biermaie/segment_anything/sam_vit_b_01ec64.pth', plot_filename=f'plots/decathlon/Task02_Heart/{i}.png')
-    exit()
+decathlon = {
+    'Task01_BrainTumour' : Decathlon_BrainTumour(source='datasets/decathlon', classname='brain', modality='FLAIR', mode='max'),
+    'Task02_Heart' : Decathlon_Heart(source='datasets/decathlon', classname='heart', mode='max'),
+    'Task03_Liver' : Decathlon_Liver(source='datasets/decathlon', classname='Liver', mode='max'),
+    'Task04_Hippocampus' : Decathlon_Hippocampus(source='datasets/decathlon', classname='Hippocampus', mode='max'),
+    'Task05_Prostate' : Decathlon_Prostate(source='datasets/decathlon', classname='Prostate', modality='ADC', mode='max'),
+    'Task06_Lung' : Decathlon_Lung(source='datasets/decathlon', classname='Lung', mode='max'),
+    'Task07_Pancreas' : Decathlon_Pancreas(source='datasets/decathlon', classname='Pancreas', mode='max'),
+    'Task08_HepaticVessel' : Decathlon_HepaticVessel(source='datasets/decathlon', classname='HepaticVessel', mode='max'),
+    'Task09_Spleen' : Decathlon_Spleen(source='datasets/decathlon', classname='Spleen', mode='max'),
+    'Task10_Colon' : Decathlon_Colon(source='datasets/decathlon', classname='Colon', mode='max')
+}
+
+
+for loader in decathlon:
+    print(f"Create plot for {loader}")
+    if not os.path.exists(f'plots/decathlon/{loader}'):
+        os.makedirs(f'plots/decathlon/{loader}')
+    SAM_prediction(
+        decathlon[loader][0][0].numpy(),
+        decathlon[loader][0][1].numpy(),
+        weight_path='/local/biermaie/segment_anything/sam_vit_b_01ec64.pth',
+        plot_filename=f'plots/decathlon/{loader}/prediction.png'
+    )
+
