@@ -77,8 +77,9 @@
         <div class="canvas-container">
             <canvas id="canvas"></canvas>
         </div>
-
-        <form id="annotation-form" action="/submit" method="post">
+        <!-- When you click the submit button a python file gets triggered and then inference is run on the submitted picture -->
+        <!-- change path to the local one in you file system -->
+        <form action="C:/Users/lucaa/Desktop/Master Studium/SS23/Praktikum Machine Learning in Graphics, Vision and Language (MSc) - SoSe 23/MedicalImageSegmentation WebDev/run_bash.py" id="annotation-form" method="post">
             {% csrf_token %}
             <input type="hidden" name="dotPositions" id="dotPositionsInput">
             <textarea name="userText" id="userTextInput" placeholder="Enter your text"></textarea>
