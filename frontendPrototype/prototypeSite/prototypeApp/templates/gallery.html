@@ -10,7 +10,7 @@
 
                     <input type="file" name="images" accept="image/*" multiple required style="margin-bottom: 1rem; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
                     <br>
-                    <input type="submit" value="Upload" onclick="animateButton(this);"
+                    <input type="submit" id="upload-button" value="Upload" onclick="animateButton(this);"
                            style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
                 </div>
             </form>
@@ -160,6 +160,9 @@
             transition: transform 0.3s;
             margin-left: 25px;
         }
+        .gallery-item:hover{
+            transform: scale(1.15);
+        }
 
         .gallery-item img {
             display: block;
@@ -188,6 +191,17 @@
             text-align: center;
             position: relative; /* Add position relative */
         }
+
+        #upload-button:hover{
+            transform: scale(1.1);
+        } 
+        
+        #delete-button:hover{
+            transform: scale(1.1);
+        }
+
+
+
 
     </style>
 
