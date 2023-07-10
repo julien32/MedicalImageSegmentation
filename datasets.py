@@ -361,6 +361,7 @@ class Decathlon(torch.utils.data.Dataset):
         if not os.path.exists(f"{self.source}/{self.discipline}"):
             self.download_and_extract()
         self.imgs, self.labels = self.get_img_label_names()
+        self.original_dim = nib.load(self.imgs[0]).get_fdata().shape
     
     def __len__(self):
         return len(self.imgs)
@@ -384,24 +385,41 @@ class Decathlon(torch.utils.data.Dataset):
             labels.append(f"{self.source}/{self.discipline}{img_label_pair['label'].split('.')[1]}.nii.gz")
         return images, labels
     
+    def transform(self, image_numpy, mask_numpy, mean_std = False):
+        image_numpy_uint8 = cv2.normalize(image_numpy, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+        image_tensor = transforms.ToTensor()(image_numpy_uint8)
+        image_tensor = transforms.Resize((1024, 1024))(image_tensor)
+        if mean_std == True:
+            image_tensor = transforms.Normalize([self.mean]*3, [self.std]*3)(image_tensor)
+        image_tensor = image_tensor.permute(1, 2, 0)
+        image_tensor = image_tensor * 255
+        image_tensor = image_tensor.to(torch.uint8)
+        mask_tensor = transforms.ToTensor()(mask_numpy)
+        mask_tensor = transforms.Resize((1024, 1024))(mask_tensor)
+        return image_tensor, mask_tensor
+    
     def visualize(self, idx, fps=5):
-        nii_img = nib.load(self.imgs[idx])
-        nii_data = nii_img.get_fdata()
-        nii_label = nib.load(self.labels[idx])
-        nii_label_data = nii_label.get_fdata()
+        nii_data, nii_label_data = self.load_raw(idx, transform_mask=False)
         dim = nii_data.shape
+        nii_data = cv2.normalize(nii_data, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
         gif_data = [np.tile(np.tile(nii_data[:, :, i][..., np.newaxis], (1, 1, 3)), (1, 2, 1)) for i in range(dim[2])]
+        colors = [[255, 0, 0], [0, 255, 0], [0, 0, 255]]
         for i in range(dim[2]):
-            mask = nii_label_data[:, :, i] == 1.0
-            gif_data[i][:dim[0], :dim[1], :][mask] = [255, 0, 0]
+            for j in range(1, len(self.lbs)):
+                mask = nii_label_data[:, :, i] == float(j)
+                gif_data[i][:dim[0], :dim[1], :][mask] = np.array(colors[j-1])
         imageio.mimsave(f'{self.source}/{self.discipline}/{idx}.gif', gif_data, fps=fps)
         print(f'Visualization saved at destination: {self.source}/{self.discipline}/{idx}.gif')
     
-    def __getitem__(self, idx):
+    def load_raw(self, idx):
         nii_img = nib.load(self.imgs[idx])
         nii_data = nii_img.get_fdata()
         nii_label = nib.load(self.labels[idx])
         nii_label_data = nii_label.get_fdata()
+        return nii_data, nii_label_data
+       
+    def __getitem__(self, idx):
+        nii_data, nii_label_data = self.load_raw(idx)
         if self.mode == 'all':
             return nii_data, nii_label_data
         elif self.mode == 'random':
@@ -409,135 +427,158 @@ class Decathlon(torch.utils.data.Dataset):
         elif self.mode == 'max':
             index = np.argmax(np.sum(nii_label_data, axis=(0, 1)))
         image = np.tile(nii_data[:, :, index][..., np.newaxis], (1, 1, 3))
-        image = transforms.ToTensor()(image)
-        image = transforms.Resize((1024, 1024))(image)
-        image = image.permute(1, 2, 0)
-        mask = transforms.ToTensor()(nii_label_data[:, :, index])
-        mask = transforms.Resize((1024, 1024))(mask)
-        return image, mask
+        image_tensor, mask_tensor = self.transform(image, nii_label_data[:, :, index])
+        return image_tensor, mask_tensor
 
 class Decathlon_BrainTumour(Decathlon):
-    def __init__(self, source, classname, modality, mode='max'):
+    def __init__(self, source, classname, modality, label, mode='max'):
         self.discipline = 'Task01_BrainTumour'
+        self.lbs = ['background', 'edema', 'non-enhancing tumor', 'enhancing tumour']
         if modality not in ['FLAIR', 'T1w', 'T1gd', 'T2w']:
             raise Exception("Given modality does not exist in the BrainTumour dataset. Please choose between FLAIR, T1w, T1gd or T2w.")
-        self.modality = modality
+        if label not in ['edema', 'non-enhancing tumor', 'enhancing tumour']:
+            raise Exception("Given label does not exists in the masks of the BrainTumour dataset. Please choose between 'edema', 'non-enhancing tumor' or'enhancing tumour'")
+        self.modality = ['FLAIR', 'T1w', 'T1gd', 'T2w'].index(modality)
+        self.label = ['None', 'edema', 'non-enhancing tumour', 'enhancing tumour'].index(label)
+        self.mean = 0.109
+        self.std = 0.2045
         super(Decathlon_BrainTumour, self).__init__(source, classname, mode)
     
-    def visualize(self, idx, fps=5):
-        nii_img = nib.load(self.imgs[idx])
-        nii_data = nii_img.get_fdata()
-        nii_label = nib.load(self.labels[idx])
-        nii_label_data = nii_label.get_fdata()
-        nii_data = nii_data[:, :, :, ['FLAIR', 'T1w', 'T1gd', 'T2w'].index(self.modality)]
-        dim = nii_data.shape
-        gif_data = [np.tile(np.tile(nii_data[:, :, i][..., np.newaxis], (1, 1, 3)), (1, 2, 1)) for i in range(dim[2])]
-        for i in range(dim[2]):
-            mask = nii_label_data[:, :, i] == 1.0
-            gif_data[i][:dim[0], :dim[1], :][mask] = [255, 0, 0]
-        imageio.mimsave(f'{self.source}/{self.discipline}/{idx}.gif', gif_data, fps=fps)
-        print(f'Visualization saved at destination: {self.source}/{self.discipline}/{idx}.gif')
-    
-    def __getitem__(self, idx):
-        nii_img = nib.load(self.imgs[idx])
-        nii_data = nii_img.get_fdata()
-        nii_label = nib.load(self.labels[idx])
-        nii_label_data = nii_label.get_fdata()
-        nii_data = nii_data[:, :, :, ['FLAIR', 'T1w', 'T1gd', 'T2w'].index(self.modality)]
-        if self.mode == 'all':
-            return nii_data, nii_label_data
-        elif self.mode == 'random':
-            index = random.randrange(self.__len__())
-        elif self.mode == 'max':
-            index = np.argmax(np.sum(nii_label_data, axis=(0, 1)))
-        image = np.tile(nii_data[:, :, index][..., np.newaxis], (1, 1, 3))
-        image = transforms.ToTensor()(image)
-        image = transforms.Resize((1024, 1024))(image)
-        image = image.permute(1, 2, 0)
-        mask = transforms.ToTensor()(nii_label_data[:, :, index])
-        mask = transforms.Resize((1024, 1024))(mask)
-        return image, mask
+    def load_raw(self, idx, transform_mask=True):
+        nii_data, nii_label_data = super(Decathlon_BrainTumour, self).load_raw(idx)
+        nii_data = nii_data[:, :, :, self.modality]
+        if transform_mask == True:
+            if self.label == 1:
+                nii_label_data[nii_label_data != 1] = 0
+            else:
+                nii_label_data[nii_label_data != self.label] = 0
+                nii_label_data[nii_label_data == self.label] = 1
+        return nii_data, nii_label_data
 
 class Decathlon_Heart(Decathlon):
-    def __init__(self, source='path/to/decathlon', classname=None, mode='max'):
+    def __init__(self, source, classname, mode='max'):
         self.discipline = 'Task02_Heart'
+        self.lbs = ['background', 'left atrium']
         super(Decathlon_Heart, self).__init__(source, classname, mode)
+    
 
 class Decathlon_Liver(Decathlon):
-    def __init__(self, source='path/to/decathlon', classname=None, mode='max'):
+    def __init__(self, source, classname, label, mode='max'):
         self.discipline = 'Task03_Liver'
+        self.lbs = ['background', 'liver', 'cancer']
+        if label not in ['liver', 'cancer']:
+            raise Exception("Given label does not exists in the masks of the Liver dataset. Please choose between 'liver' and 'cancer'")
+        self.label = ['None', 'liver', 'cancer'].index(label)
         super(Decathlon_Liver, self).__init__(source, classname, mode)
-
+    
+    def load_raw(self, idx, transform_mask=True):
+        nii_data, nii_label_data = super(Decathlon_Liver, self).load_raw(idx)
+        if transform_mask == True:
+            if self.label == 1:
+                nii_label_data[nii_label_data != 1] = 0
+            else:
+                nii_label_data[nii_label_data != self.label] = 0
+                nii_label_data[nii_label_data == self.label] = 1
+        return nii_data, nii_label_data
+        
 class Decathlon_Hippocampus(Decathlon):
-    def __init__(self, source='path/to/decathlon', classname=None, mode='max'):
+    def __init__(self, source, classname, label, mode='max'):
         self.discipline = 'Task04_Hippocampus'
+        self.lbs = ['background', 'Anterior', 'Posterior']
+        if label not in ['Anterior', 'Posterior']:
+            raise Exception("Given label does not exists in the masks of the Liver dataset. Please choose between 'Anterior' or 'Posterior'")
+        self.label = ['None', 'Anterior', 'Posterior'].index(label)
         super(Decathlon_Hippocampus, self).__init__(source, classname, mode)
+    
+    def load_raw(self, idx):
+        nii_data, nii_label_data = super(Decathlon_Hippocampus, self).load_raw(idx)
+        if transform_mask == True:
+            if self.label == 1:
+                nii_label_data[nii_label_data != 1] = 0
+            else:
+                nii_label_data[nii_label_data != self.label] = 0
+                nii_label_data[nii_label_data == self.label] = 1
+        return nii_data, nii_label_data
 
 class Decathlon_Prostate(Decathlon):
-    def __init__(self, source, classname, modality, mode='max'):
+    def __init__(self, source, classname, modality, label, mode='max'):
         self.discipline = 'Task05_Prostate'
+        self.lbs = ['background', 'PZ', 'TZ']
         if modality not in ['T2', 'ADC']:
             raise Exception("Given modality does not exist in the Prostate dataset. Please choose between T2, ADC.")
-        self.modality = modality
+        if label not in ['PZ', 'TZ']:
+            raise Exception("Given label does not exists in the masks of the Liver dataset. Please choose between 'PZ' or 'TZ")
+        self.label = ['None', 'PZ', 'TZ'].index(label)
+        self.modality = ['T2', 'ADC'].index(modality)
         super(Decathlon_Prostate, self).__init__(source, classname, mode)
     
-    def visualize(self, idx, fps=5):
-        nii_img = nib.load(self.imgs[idx])
-        nii_data = nii_img.get_fdata()
-        nii_label = nib.load(self.labels[idx])
-        nii_label_data = nii_label.get_fdata()
-        nii_data = nii_data[:, :, :, ['T2', 'ADC'].index(self.modality)]
-        dim = nii_data.shape
-        gif_data = [np.tile(np.tile(nii_data[:, :, i][..., np.newaxis], (1, 1, 3)), (1, 2, 1)) for i in range(dim[2])]
-        for i in range(dim[2]):
-            mask = nii_label_data[:, :, i] == 1.0
-            gif_data[i][:dim[0], :dim[1], :][mask] = [255, 0, 0]
-        imageio.mimsave(f'{self.source}/{self.discipline}/{idx}.gif', gif_data, fps=fps)
-        print(f'Visualization saved at destination: {self.source}/{self.discipline}/{idx}.gif')
+    def load_raw(self, idx, transform_mask=True):
+        nii_data, nii_label_data = super(Decathlon_Prostate, self).load_raw(idx)
+        nii_data = nii_data[:, :, :, self.modality]
+        if transform_mask == True:
+            if self.label == 1:
+                nii_label_data[nii_label_data != 1] = 0
+            else:
+                nii_label_data[nii_label_data != self.label] = 0
+                nii_label_data[nii_label_data == self.label] = 1
+        return nii_data, nii_label_data
+     
     
-    def __getitem__(self, idx):
-        nii_img = nib.load(self.imgs[idx])
-        nii_data = nii_img.get_fdata()
-        nii_label = nib.load(self.labels[idx])
-        nii_label_data = nii_label.get_fdata()
-        nii_data = nii_data[:, :, :, ['T2', 'ADC'].index(self.modality)]
-        if self.mode == 'all':
-            return nii_data, nii_label_data
-        elif self.mode == 'random':
-            index = random.randrange(self.__len__())
-        elif self.mode == 'max':
-            index = np.argmax(np.sum(nii_label_data, axis=(0, 1)))
-        image = np.tile(nii_data[:, :, index][..., np.newaxis], (1, 1, 3))
-        image = transforms.ToTensor()(image)
-        image = transforms.Resize((1024, 1024))(image)
-        image = image.permute(1, 2, 0)
-        mask = transforms.ToTensor()(nii_label_data[:, :, index])
-        mask = transforms.Resize((1024, 1024))(mask)
-        return image, mask
-
 class Decathlon_Lung(Decathlon):
-    def __init__(self, source='path/to/decathlon', classname=None, mode='max'):
+    def __init__(self, source, classname, mode='max'):
         self.discipline = 'Task06_Lung'
+        self.lbs = ['background', 'cancer']
         super(Decathlon_Lung, self).__init__(source, classname, mode)
+    
 
 class Decathlon_Pancreas(Decathlon):
-    def __init__(self, source='path/to/decathlon', classname=None, mode='max'):
+    def __init__(self, source, classname, label, mode='max'):
         self.discipline = 'Task07_Pancreas'
+        self.lbs = ['background', 'pancreas', 'cancer']
+        if label not in ['pancreas', 'cancer']:
+            raise Exception("Given label does not exists in the masks of the Liver dataset. Please choose between 'pancreas' or 'cancer'")
+        self.label = ['None', 'pancreas', 'cancer'].index(label)
         super(Decathlon_Pancreas, self).__init__(source, classname, mode)
+    
+    def load_raw(self, idx, transform_mask=True):
+        nii_data, nii_label_data = super(Decathlon_Pancreas, self).load_raw(idx)
+        if transform_mask == True:
+            if self.label == 1:
+                nii_label_data[nii_label_data != 1] = 0
+            else:
+                nii_label_data[nii_label_data != self.label] = 0
+                nii_label_data[nii_label_data == self.label] = 1
+        return nii_data, nii_label_data
 
 class Decathlon_HepaticVessel(Decathlon):
-    def __init__(self, source='path/to/decathlon', classname=None, mode='max'):
+    def __init__(self, source, classname, label, mode='max'):
         self.discipline = 'Task08_HepaticVessel'
+        self.lbs = ['background', 'Vessel', 'Tumour']
+        if label not in ['Vessel', 'Tumour']:
+            raise Exception("Given label does not exists in the masks of the Liver dataset. Please choose between 'Vessel' or 'Tumour'")
+        self.label = ['None', 'Vessel', 'Tumour'].index(label)
         super(Decathlon_HepaticVessel, self).__init__(source, classname, mode)
+    
+    def load_raw(self, idx, transform_mask=True):
+        nii_data, nii_label_data = super(Decathlon_HepaticVessel, self).load_raw(idx)
+        if transform_mask == True:
+            if self.label == 1:
+                nii_label_data[nii_label_data != 1] = 0
+            else:
+                nii_label_data[nii_label_data != self.label] = 0
+                nii_label_data[nii_label_data == self.label] = 1
+        return nii_data, nii_label_data
 
 class Decathlon_Spleen(Decathlon):
-    def __init__(self, source='path/to/decathlon', classname=None, mode='max'):
+    def __init__(self, source, classname, mode='max'):
         self.discipline = 'Task09_Spleen'
+        self.lbs = ['background', 'spleen']
         super(Decathlon_Spleen, self).__init__(source, classname, mode)
 
 class Decathlon_Colon(Decathlon):
-    def __init__(self, source='path/to/decathlon', classname=None, mode='max'):
+    def __init__(self, source, classname, mode='max'):
         self.discipline = 'Task10_Colon'
+        self.lbs = ['background', 'cancer primaries']
         super(Decathlon_Colon, self).__init__(source, classname, mode)
 
 
