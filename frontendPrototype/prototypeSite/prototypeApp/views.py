@@ -66,3 +66,7 @@ def submit_annotation(request):
 
 def base(request):
     return render(request, 'description.html')
+
+
+def result(request):
+    return render(request, 'result.html')
