@@ -1,7 +1,10 @@
 import os
 
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+import json
+from django.http import JsonResponse
 
 from .models import Picture
 
@@ -40,14 +43,56 @@ def delete_images_confirm(request):
     return redirect('gallery')
 
 
+# def annotation_view(request, picture_id):
+# picture = Picture.objects.get(pk=picture_id)
+# if request.method == 'POST':
+# annotation = request.POST.get('annotation')
+# picture.annotation = annotation
+# picture.save()
+# return redirect('gallery')
+# return render(request, 'annotation.html', {'picture': picture})
+
+
 def annotation_view(request, picture_id):
-    picture = Picture.objects.get(pk=picture_id)
-    if request.method == 'POST':
-        annotation = request.POST.get('annotation')
-        picture.annotation = annotation
+    picture = get_object_or_404(Picture, id=picture_id)
+    pictures = Picture.objects.all()
+    num_images = pictures.count()
+
+    current_index = None
+    prev_id = None
+    next_id = None
+
+    for index, pic in enumerate(pictures):
+        if pic.id == picture_id:
+            current_index = index
+            break
+
+    if current_index is not None:
+        prev_index = (current_index - 1 + num_images) % num_images
+        next_index = (current_index + 1) % num_images
+
+        prev_id = pictures[prev_index].id
+        next_id = pictures[next_index].id
+
+    if request.method == 'POST' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        x_coordinate = float(request.POST.get('x_coordinate'))
+        y_coordinate = float(request.POST.get('y_coordinate'))
+        picture.x_coordinate = x_coordinate
+        picture.y_coordinate = y_coordinate
         picture.save()
-        return redirect('gallery')
-    return render(request, 'annotation.html', {'picture': picture})
+
+        return JsonResponse({'success': True})
+
+    context = {
+        'picture': picture,
+        'num_images': num_images,
+        'current_image_index': current_index,
+        'prev_picture_id': prev_id,
+        'next_picture_id': next_id,
+        'pictures': pictures,
+    }
+
+    return render(request, 'annotation.html', context)
 
 
 def submit_annotation(request):
