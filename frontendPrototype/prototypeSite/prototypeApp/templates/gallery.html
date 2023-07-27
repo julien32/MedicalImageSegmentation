@@ -29,7 +29,7 @@
                 <div id="image-gallery">
                     {% for picture in pictures %}
                         <div class="gallery-item">
-                            <a href="{% url 'annotation' picture.id %}">
+                            <a href="{% url 'annotation' picture.id %}">Annotate</a>
                                 <img src="{{ picture.image.url }}" alt="Image">
                             </a>
                             <div class="image-title">
