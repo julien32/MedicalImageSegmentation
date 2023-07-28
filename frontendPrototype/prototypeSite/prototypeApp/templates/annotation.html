@@ -130,23 +130,37 @@
 
             let currentImageIndex;
 
+            const dotSize = 10; // Adjust the size of the dot as needed
+            let dotPositions = []; // Array to store dot positions
+            let dotColor = '#d50909'; // Default dot color (red)
+
             // compare image urls to figure out at what position inside of image array current image is
             for (let i = 0; i < numImages; i++) {
-                console.log("{{picture.image.url}}");
-                console.log(imageUrls[i]);
+                console.log("Start: Current picture URL: " + "{{picture.image.url}}");
+                console.log("Start: Current comparison URL: " + imageUrls[i]);
 
-                if (imageUrls[i] == "{{ picture.image.url }}") {
-                    console.log("match");
+                if (imageUrls[i] == currentImageURL) {
+                    console.log("Start: URLs match!");
                     currentImageIndex = i;
-                    console.log(currentImageIndex);
+                    console.log("Start: Index of matching existing image: " + currentImageIndex);
                 }
             }
 
-            function renderAnnotationDots() {
-                if (dotPositions != 0) {
+            // Show image navigation arrows depending on number of images uploaded
+            const navArrows = document.querySelector('.nav-arrows');
+            if (numImages <= 1) {
+                navArrows.style.display = 'none';
+            } else {
+                navArrows.style.display = 'flex';
+            }
+
+            function renderExistingDots() {
+                if (dotPositions.length != 0) {
 
                     for (let i = 0; i < dotPositions.length; i++) {
-                        if (dotPositions[i].imageURL == imageUrls[currentImageIndex]) {
+                        console.log("Existing Dot: Current URL: " + imageUrls[currentImageIndex]);
+                        console.log("Existing Dot: Comparison URL: " + dotPositions[i].currentImageURL)
+                        if (dotPositions[i].currentImageURL === imageUrls[currentImageIndex]) {
                             const circle = document.createElement('div');
                             circle.classList.add('circle');
                             circle.style.left = `${dotPositions[i].x - dotSize / 2}px`;
@@ -154,38 +168,15 @@
                             circle.style.backgroundColor = dotColor;
                             document.querySelector('.canvas-container').appendChild(circle);
                             canvas.removeEventListener('mousedown', handleMouseDown);
-                            console.log("matched and loaded")
-                            return;
+                            console.log("Existing Dot: Loaded existing annotation dot");
+                            return true;
                         }
                     }
-                }
-
-                else {
-
-                    const canvasRect = canvas.getBoundingClientRect();
-                    const offsetX = event.clientX - canvasRect.left;
-                    const offsetY = event.clientY - canvasRect.top;
-                    const imageURL = "{{ picture.image.url }}"
-
-                    // Store the dot position in the array
-                    dotPositions.push({imageURL, x: offsetX, y: offsetY});
-                    alert(`Clicked Location: (${offsetX}px, ${offsetY}px) ${imageURL}, ${numImages}, ${currentImageIndex}`);
-                    console.log(imageUrls);
-
-                    const circle = document.createElement('div');
-                    circle.classList.add('circle');
-                    circle.style.left = `${offsetX - dotSize / 2}px`;
-                    circle.style.top = `${offsetY - dotSize / 2}px`;
-                    circle.style.backgroundColor = dotColor;
-                    document.querySelector('.canvas-container').appendChild(circle);
-
-                    //canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
-                    // Update the dot positions input value
-                    document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
                 }
             }
 
             image.addEventListener('load', () => {
+                console.log("Image Loader: image loaded")
                 const aspectRatio = image.width / image.height;
                 const maxWidth = 800; // Maximum width for the canvas (adjust as needed)
                 const maxHeight = maxWidth / aspectRatio;
@@ -193,23 +184,30 @@
                 canvas.width = maxWidth;
                 canvas.height = maxHeight;
 
-                // Show image navigation arrows depending on number of images uploaded
-                const navArrows = document.querySelector('.nav-arrows');
-                if (numImages <= 1) {
-                    navArrows.style.display = 'none';
-                } else {
-                    navArrows.style.display = 'flex';
-                }
-
                 ctx.drawImage(image, 0, 0, maxWidth, maxHeight);
             });
 
-            const dotSize = 10; // Adjust the size of the dot as needed
-            let dotPositions = []; // Array to store dot positions
-            let dotColor = '#d50909'; // Default dot color (red)
-
             const handleMouseDown = (event) => {
-                renderAnnotationDots()
+                const canvasRect = canvas.getBoundingClientRect();
+                const offsetX = event.clientX - canvasRect.left;
+                const offsetY = event.clientY - canvasRect.top;
+
+                // Store the dot position in the array
+                dotPositions.push({currentImageURL, x: offsetX, y: offsetY});
+                alert(`Clicked Location: (${offsetX}px, ${offsetY}px) ${currentImageURL}, ${numImages}, ${currentImageIndex}`);
+                console.log("Mouse Down: List of all image urls: " + imageUrls);
+                console.log("Mouse Down: Current image URL: " + currentImageURL);
+
+                const circle = document.createElement('div');
+                circle.classList.add('circle');
+                circle.style.left = `${offsetX - dotSize / 2}px`;
+                circle.style.top = `${offsetY - dotSize / 2}px`;
+                circle.style.backgroundColor = dotColor;
+                document.querySelector('.canvas-container').appendChild(circle);
+
+                canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
+                // Update the dot positions input value
+                document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
             };
 
             canvas.addEventListener('mousedown', handleMouseDown);
@@ -239,12 +237,12 @@
                 // Clear dot position for current image
 
                 for (let i = 0; i < dotPositions.length; i++) {
-                    if (dotPositions[i].imageURL == imageUrls[currentImageIndex]) {
+                    if (dotPositions[i].currentImageURL == imageUrls[currentImageIndex]) {
                         dotPositions.splice(i, 1);
                     }
                 }
 
-                console.log(dotPositions)
+                console.log("List of all dot positions: " + dotPositions);
 
                 // Remove existing dot elements from the page
                 const dots = document.querySelectorAll('.circle');
@@ -265,7 +263,8 @@
                     currentImageIndex = numImages - 1;
                 }
 
-                image.src = imageUrls[currentImageIndex];
+                currentImageURL = imageUrls[currentImageIndex];
+                image.src = currentImageURL;
             });
 
             nextImage.addEventListener('click', (event) => {
@@ -275,19 +274,26 @@
                     currentImageIndex = 0;
                 }
 
-                image.src = imageUrls[currentImageIndex];
+                currentImageURL = imageUrls[currentImageIndex];
+                image.src = currentImageURL;
 
-                console.log(dotPositions.length)
-                for (let i = 0; i < dotPositions.length; i++) {
-                    console.log(dotPositions[i]);
-                    console.log(dotPositions[i].imageURL)
-                    console.log(imageUrls[currentImageIndex])
-                    if (dotPositions[i].imageURL == imageUrls[currentImageIndex]) {
-                        console.log("YES!")
-                    }
+                // Remove existing dot elements from the page
+                const dots = document.querySelectorAll('.circle');
+                dots.forEach((dot) => dot.remove());
+
+
+                console.log("Next: Length of dot array: " + dotPositions.length);
+                console.log("Next: Current URL: " + currentImageURL);
+
+                renderExistingDots();
+
+                // if no existing dots are available for image, make annotation possible
+                if (!renderExistingDots()) {
+                    console.log("Next: Annotation not available")
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                } else {
+                    console.log("Next: Annotation available")
                 }
-
-                renderAnnotationDots();
             });
         });
     </script>
