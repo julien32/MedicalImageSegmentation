@@ -44,11 +44,11 @@
         }
 
         /* hier kann man die hover animation von den buttons ändern */
-        #submit:hover, #showPixelButton:hover, #printBottomRightButton:hover, #clearButton:hover {
+        #submit:hover, #showPixelButton:hover, #clearAllAnnotationsButton:hover, #clearSingleAnnotationButton:hover {
             background-color: brown;
         }
 
-        #submit, #showPixelButton, #printBottomRightButton, #clearButton {
+        #submit, #showPixelButton, #clearAllAnnotationsButton, #clearSingleAnnotationButton {
             display: inline-block;
             padding: 0.8rem 2rem;
             margin: 0.5rem;
@@ -117,8 +117,9 @@
 
         <div class="buttons-container">
             <button id="showPixelButton">Show Pixel Location</button>
-            <button id="printBottomRightButton">Print Bottom Right Corner</button>
-            <button id="clearButton">Clear Dot</button>
+            <button id="clearSingleAnnotationButton">Clear annotation</button>
+            <button id="clearAllAnnotationsButton">Clear all annotations</button>
+
             <input id="colorPicker" type="color">
         </div>
     </div>
@@ -126,14 +127,10 @@
     <script>
 
     // ToDo: pass on information of pictures and annotated data only
-    // ToDo: make arrows nicer
     // ToDo: remove buttons for pixel location etc.
     // ToDo: warning on leaving page for losing all annotation progress
     // ToDo: confirmation button for finishing annotation and starting segmentation
     // ToDo: create annotation site that lets you annotate all pictures immediately?
-    // ToDo: Create clear all annotation button
-
-
 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -235,11 +232,16 @@
                 alert(`Clicked Location: (${x}px, ${y}px)`);
             });
 
-            const printBottomRightButton = document.querySelector('#printBottomRightButton');
-            printBottomRightButton.addEventListener('click', () => {
-                const x = canvas.width;
-                const y = canvas.height;
-                alert(`Bottom Right Corner: (${x}px, ${y}px)`);
+            const clearAllAnnotationsButton = document.querySelector('#clearAllAnnotationsButton');
+            clearAllAnnotationsButton.addEventListener('click', () => {
+                dotPositions = [];
+
+                // Remove existing dot elements from the page
+                const dots = document.querySelectorAll('.circle');
+                dots.forEach((dot) => dot.remove());
+
+                // Reattach the mouse click listener
+                canvas.addEventListener('mousedown', handleMouseDown);
             });
 
             const colorPicker = document.querySelector('#colorPicker');
@@ -247,8 +249,8 @@
                 dotColor = event.target.value;
             });
 
-            const clearButton = document.querySelector('#clearButton');
-            clearButton.addEventListener('click', () => {
+            const clearSingleAnnotationButton = document.querySelector('#clearSingleAnnotationButton');
+            clearSingleAnnotationButton.addEventListener('click', () => {
                 // Clear dot position for current image
 
                 for (let i = 0; i < dotPositions.length; i++) {
