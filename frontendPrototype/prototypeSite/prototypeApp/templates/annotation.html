@@ -79,8 +79,21 @@
             justify-content: space-between;
             z-index: 1;
         }
-    </style>
 
+        #prevImage, #nextImage {
+            background-color: #4CAF50FF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+        }
+
+
+    </style>
 
     <div class="container">
         <h1>Annotate Image</h1>
@@ -111,6 +124,18 @@
     </div>
 
     <script>
+
+    // ToDo: pass on information of pictures and annotated data only
+    // ToDo: make arrows nicer
+    // ToDo: remove buttons for pixel location etc.
+    // ToDo: warning on leaving page for losing all annotation progress
+    // ToDo: confirmation button for finishing annotation and starting segmentation
+    // ToDo: create annotation site that lets you annotate all pictures immediately?
+    // ToDo: Create clear all annotation button
+
+
+
+
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.querySelector('#canvas');
             const ctx = canvas.getContext('2d');
@@ -136,13 +161,10 @@
 
             // compare image urls to figure out at what position inside of image array current image is
             for (let i = 0; i < numImages; i++) {
-                console.log("Start: Current picture URL: " + "{{picture.image.url}}");
-                console.log("Start: Current comparison URL: " + imageUrls[i]);
 
                 if (imageUrls[i] == currentImageURL) {
-                    console.log("Start: URLs match!");
                     currentImageIndex = i;
-                    console.log("Start: Index of matching existing image: " + currentImageIndex);
+                    break;
                 }
             }
 
@@ -158,8 +180,6 @@
                 if (dotPositions.length != 0) {
 
                     for (let i = 0; i < dotPositions.length; i++) {
-                        console.log("Existing Dot: Current URL: " + imageUrls[currentImageIndex]);
-                        console.log("Existing Dot: Comparison URL: " + dotPositions[i].currentImageURL)
                         if (dotPositions[i].currentImageURL === imageUrls[currentImageIndex]) {
                             const circle = document.createElement('div');
                             circle.classList.add('circle');
@@ -168,7 +188,6 @@
                             circle.style.backgroundColor = dotColor;
                             document.querySelector('.canvas-container').appendChild(circle);
                             canvas.removeEventListener('mousedown', handleMouseDown);
-                            console.log("Existing Dot: Loaded existing annotation dot");
                             return true;
                         }
                     }
@@ -176,7 +195,6 @@
             }
 
             image.addEventListener('load', () => {
-                console.log("Image Loader: image loaded")
                 const aspectRatio = image.width / image.height;
                 const maxWidth = 800; // Maximum width for the canvas (adjust as needed)
                 const maxHeight = maxWidth / aspectRatio;
@@ -194,9 +212,6 @@
 
                 // Store the dot position in the array
                 dotPositions.push({currentImageURL, x: offsetX, y: offsetY});
-                alert(`Clicked Location: (${offsetX}px, ${offsetY}px) ${currentImageURL}, ${numImages}, ${currentImageIndex}`);
-                console.log("Mouse Down: List of all image urls: " + imageUrls);
-                console.log("Mouse Down: Current image URL: " + currentImageURL);
 
                 const circle = document.createElement('div');
                 circle.classList.add('circle');
@@ -241,8 +256,6 @@
                         dotPositions.splice(i, 1);
                     }
                 }
-
-                console.log("List of all dot positions: " + dotPositions);
 
                 // Remove existing dot elements from the page
                 const dots = document.querySelectorAll('.circle');
