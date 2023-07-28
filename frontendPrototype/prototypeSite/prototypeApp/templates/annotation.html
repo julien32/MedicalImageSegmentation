@@ -265,6 +265,17 @@
 
                 currentImageURL = imageUrls[currentImageIndex];
                 image.src = currentImageURL;
+
+                // Remove existing dot elements from the page
+                const dots = document.querySelectorAll('.circle');
+                dots.forEach((dot) => dot.remove());
+
+                renderExistingDots();
+
+                // if no existing dots are available for image, make annotation possible
+                if (!renderExistingDots()) {
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                }
             });
 
             nextImage.addEventListener('click', (event) => {
@@ -281,18 +292,11 @@
                 const dots = document.querySelectorAll('.circle');
                 dots.forEach((dot) => dot.remove());
 
-
-                console.log("Next: Length of dot array: " + dotPositions.length);
-                console.log("Next: Current URL: " + currentImageURL);
-
                 renderExistingDots();
 
                 // if no existing dots are available for image, make annotation possible
                 if (!renderExistingDots()) {
-                    console.log("Next: Annotation not available")
                     canvas.addEventListener('mousedown', handleMouseDown);
-                } else {
-                    console.log("Next: Annotation available")
                 }
             });
         });
