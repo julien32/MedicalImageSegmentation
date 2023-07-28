@@ -1,175 +1,296 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-    <html>
-    <head>
-        <title>Annotate Image</title>
-        <style>
-            .circle {
-                position: absolute;
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                background-color: red;
-                transform: translate(-50%, -50%);
-            }
+        h1 {
+            text-align: center;
+        }
 
-            .annotation-container {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 80vh;
-                position: relative;
-                overflow: hidden;
-            }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px; /* Adjust the maximum width as needed */
+            margin: 0 auto;
+            overflow: hidden;
+        }
 
-            .annotation-container img {
-                max-width: 100%;
-                max-height: 400px; /* Adjust the height as per your requirement */
-                object-fit: contain;
-            }
+        #canvas {
+            display: block;
+            background: url("{{ picture.image.url }}") no-repeat;
+            background-size: cover;
+        }
 
-            .nav-arrows {
-                position: absolute;
-                top: 50%;
-                transform: translateY(-50%);
-                width: 100%;
-                display: flex;
-                justify-content: space-between;
-                z-index: 1;
-            }
-        </style>
-    </head>
-    <!-- ... (previous parts of the template) ... -->
+        .circle {
+            position: absolute;
+            width: 10px; /* Adjust the size of the dot as needed */
+            height: 10px;
+            border-radius: 50%;
+        }
 
-    <body>
-    <h1>Annotate Image</h1>
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    <div class="nav-arrows">
-        <a href="#" id="prevImage" data-url="{% url 'annotation' prev_picture_id %}">&lt; Previous</a>
-        <a href="#" id="nextImage" data-url="{% url 'annotation' next_picture_id %}">Next &gt;</a>
-    </div>
-    <div class="annotation-container">
-        <img src="{{ picture.image.url }}" id="picture">
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .buttons-container button {
+            margin: 5px 5px;
+        }
+
+        /* hier kann man die hover animation von den buttons ändern */
+        #submit:hover, #showPixelButton:hover, #printBottomRightButton:hover, #clearButton:hover {
+            background-color: brown;
+        }
+
+        #submit, #showPixelButton, #printBottomRightButton, #clearButton {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            margin: 0.5rem;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1rem;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 0.25rem;
+        }
+
+        #userTextInput {
+            width: 100%;
+            height: 20px;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .nav-arrows {
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1;
+        }
+    </style>
+
+
+    <div class="container">
+        <h1>Annotate Image</h1>
+
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div class="nav-arrows">
+            <a href="#" id="prevImage" data-url="{% url 'annotation' prev_picture_id %}">&lt; Previous</a>
+            <a href="#" id="nextImage" data-url="{% url 'annotation' next_picture_id %}">Next &gt;</a>
+        </div>
+        <!-- When you click the submit button a python file gets triggered and then inference is run on the submitted picture -->
+        <!-- change path to the local one in you file system -->
+        <form action="C:/Users/lucaa/Desktop/Master Studium/SS23/Praktikum Machine Learning in Graphics, Vision and Language (MSc) - SoSe 23/MedicalImageSegmentation WebDev/run_bash.py"
+              id="annotation-form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="dotPositions" id="dotPositionsInput">
+            <textarea name="userText" id="userTextInput" placeholder="Enter your text"></textarea>
+            <button type="submit">Submit</button>
+        </form>
+
+        <div class="buttons-container">
+            <button id="showPixelButton">Show Pixel Location</button>
+            <button id="printBottomRightButton">Print Bottom Right Corner</button>
+            <button id="clearButton">Clear Dot</button>
+            <input id="colorPicker" type="color">
+        </div>
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const image = document.querySelector('#picture');
-        const annotationContainer = document.querySelector('.annotation-container');
-        const numImages = {{ num_images }};
-        let currentImageIndex = parseInt("{{ current_image_index }}");
-        const imageUrls = [{% for pic in pictures %}"{{ pic.image.url }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
-        const xCoordinates = [{% for pic in pictures %}{{ pic.x_coordinate|default:-1 }}{% if not forloop.last %}, {% endif %}{% endfor %}];
-        const yCoordinates = [{% for pic in pictures %}{{ pic.y_coordinate|default:-1 }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.querySelector('#canvas');
+            const ctx = canvas.getContext('2d');
 
-         function printAnnotationValues(x, y) {
-            console.log('Annotation values:');
-            console.log('X Coordinate:', x);
-            console.log('Y Coordinate:', y);
-        }
+            const image = new Image();
+            // get current image url
+            let currentImageURL = "{{ picture.image.url }}";
 
-        function updateArrowsVisibility() {
-            const navArrows = document.querySelector('.nav-arrows');
-            if (numImages <= 1) {
-                navArrows.style.display = 'none';
-            } else {
-                navArrows.style.display = 'flex';
-            }
-        }
+            // Set current image url to source for image
+            image.src = currentImageURL;
 
-        function renderAnnotationDots() {
-            // Clear existing circles from the annotationContainer
-            const existingCircles = annotationContainer.querySelectorAll('.circle');
-            existingCircles.forEach(circle => circle.remove());
+            // get all image urls
+            let imageUrls = [{% for pic in pictures %}"{{ pic.image.url }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
 
-            // Display annotation dots for the current image
-            const x = xCoordinates[currentImageIndex];
-            const y = yCoordinates[currentImageIndex];
-            if (x >= 0 && y >= 0) {
-                const circle = document.createElement('div');
-                circle.classList.add('circle');
-                circle.style.left = `${x * 100}%`; // Convert relative coordinates to percentages
-                circle.style.top = `${y * 100}%`;
-                annotationContainer.appendChild(circle);
-            }
-        }
+            // calculate total number of images
+            const numImages = imageUrls.length;
 
-        function updateImageAndForm() {
-            // Save the annotation dots for the current image before moving to the next image
-            const x = parseFloat(annotationContainer.querySelector('.circle').style.left) / 100;
-            const y = parseFloat(annotationContainer.querySelector('.circle').style.top) / 100;
+            let currentImageIndex;
 
-            fetch("{% url 'annotation' picture.id %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': "{{ csrf_token }}",
-                },
-                body: JSON.stringify({
-                    x_coordinate: x,
-                    y_coordinate: y,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Annotation dots saved successfully!');
+            // compare image urls to figure out at what position inside of image array current image is
+            for (let i = 0; i < numImages; i++) {
+                console.log("{{picture.image.url}}");
+                console.log(imageUrls[i]);
+
+                if (imageUrls[i] == "{{ picture.image.url }}") {
+                    console.log("match");
+                    currentImageIndex = i;
+                    console.log(currentImageIndex);
                 }
-            })
-            .catch(error => {
-                console.error('Error saving annotation dots:', error);
-            });
-        }
-
-        image.addEventListener('click', (event) => {
-            if (event.detail === 1) { // Single-click for annotation dots
-                const rect = image.getBoundingClientRect();
-                const posX = (event.clientX - rect.left) / rect.width; // Calculate relative coordinates
-                const posY = (event.clientY - rect.top) / rect.height;
-                const circle = document.createElement('div');
-                circle.classList.add('circle');
-                circle.style.left = `${posX * 100}%`; // Convert relative coordinates to percentages
-                circle.style.top = `${posY * 100}%`;
-                annotationContainer.appendChild(circle);
-
-                printAnnotationValues(posX, posY); // Print the annotation values for the current image.
-                updateImageAndForm(); // Save the annotation dots for the current image.
             }
+
+            function renderAnnotationDots() {
+                if (dotPositions != 0) {
+
+                    for (let i = 0; i < dotPositions.length; i++) {
+                        if (dotPositions[i].imageURL == imageUrls[currentImageIndex]) {
+                            const circle = document.createElement('div');
+                            circle.classList.add('circle');
+                            circle.style.left = `${dotPositions[i].x - dotSize / 2}px`;
+                            circle.style.top = `${dotPositions[i].y - dotSize / 2}px`;
+                            circle.style.backgroundColor = dotColor;
+                            document.querySelector('.canvas-container').appendChild(circle);
+                            canvas.removeEventListener('mousedown', handleMouseDown);
+                            console.log("matched and loaded")
+                            return;
+                        }
+                    }
+                }
+
+                else {
+
+                    const canvasRect = canvas.getBoundingClientRect();
+                    const offsetX = event.clientX - canvasRect.left;
+                    const offsetY = event.clientY - canvasRect.top;
+                    const imageURL = "{{ picture.image.url }}"
+
+                    // Store the dot position in the array
+                    dotPositions.push({imageURL, x: offsetX, y: offsetY});
+                    alert(`Clicked Location: (${offsetX}px, ${offsetY}px) ${imageURL}, ${numImages}, ${currentImageIndex}`);
+                    console.log(imageUrls);
+
+                    const circle = document.createElement('div');
+                    circle.classList.add('circle');
+                    circle.style.left = `${offsetX - dotSize / 2}px`;
+                    circle.style.top = `${offsetY - dotSize / 2}px`;
+                    circle.style.backgroundColor = dotColor;
+                    document.querySelector('.canvas-container').appendChild(circle);
+
+                    //canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
+                    // Update the dot positions input value
+                    document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
+                }
+            }
+
+            image.addEventListener('load', () => {
+                const aspectRatio = image.width / image.height;
+                const maxWidth = 800; // Maximum width for the canvas (adjust as needed)
+                const maxHeight = maxWidth / aspectRatio;
+
+                canvas.width = maxWidth;
+                canvas.height = maxHeight;
+
+                // Show image navigation arrows depending on number of images uploaded
+                const navArrows = document.querySelector('.nav-arrows');
+                if (numImages <= 1) {
+                    navArrows.style.display = 'none';
+                } else {
+                    navArrows.style.display = 'flex';
+                }
+
+                ctx.drawImage(image, 0, 0, maxWidth, maxHeight);
+            });
+
+            const dotSize = 10; // Adjust the size of the dot as needed
+            let dotPositions = []; // Array to store dot positions
+            let dotColor = '#d50909'; // Default dot color (red)
+
+            const handleMouseDown = (event) => {
+                renderAnnotationDots()
+            };
+
+            canvas.addEventListener('mousedown', handleMouseDown);
+
+            const showPixelButton = document.querySelector('#showPixelButton');
+            showPixelButton.addEventListener('click', () => {
+                const dot = dotPositions[dotPositions.length - 1];
+                const x = Math.round(dot.x);
+                const y = Math.round(dot.y);
+                alert(`Clicked Location: (${x}px, ${y}px)`);
+            });
+
+            const printBottomRightButton = document.querySelector('#printBottomRightButton');
+            printBottomRightButton.addEventListener('click', () => {
+                const x = canvas.width;
+                const y = canvas.height;
+                alert(`Bottom Right Corner: (${x}px, ${y}px)`);
+            });
+
+            const colorPicker = document.querySelector('#colorPicker');
+            colorPicker.addEventListener('change', (event) => {
+                dotColor = event.target.value;
+            });
+
+            const clearButton = document.querySelector('#clearButton');
+            clearButton.addEventListener('click', () => {
+                // Clear dot position for current image
+
+                for (let i = 0; i < dotPositions.length; i++) {
+                    if (dotPositions[i].imageURL == imageUrls[currentImageIndex]) {
+                        dotPositions.splice(i, 1);
+                    }
+                }
+
+                console.log(dotPositions)
+
+                // Remove existing dot elements from the page
+                const dots = document.querySelectorAll('.circle');
+                dots.forEach((dot) => dot.remove());
+
+                // Reattach the mouse click listener
+                canvas.addEventListener('mousedown', handleMouseDown);
+            });
+
+            const prevImage = document.querySelector('#prevImage');
+            const nextImage = document.querySelector('#nextImage');
+
+            // Change image being displayed on canvas when clicking next or previous image button
+            prevImage.addEventListener('click', (event) => {
+                currentImageIndex -= 1;
+
+                if (currentImageIndex < 0) {
+                    currentImageIndex = numImages - 1;
+                }
+
+                image.src = imageUrls[currentImageIndex];
+            });
+
+            nextImage.addEventListener('click', (event) => {
+                currentImageIndex += 1;
+
+                if (currentImageIndex >= numImages) {
+                    currentImageIndex = 0;
+                }
+
+                image.src = imageUrls[currentImageIndex];
+
+                console.log(dotPositions.length)
+                for (let i = 0; i < dotPositions.length; i++) {
+                    console.log(dotPositions[i]);
+                    console.log(dotPositions[i].imageURL)
+                    console.log(imageUrls[currentImageIndex])
+                    if (dotPositions[i].imageURL == imageUrls[currentImageIndex]) {
+                        console.log("YES!")
+                    }
+                }
+
+                renderAnnotationDots();
+            });
         });
-
-        const prevImage = document.querySelector('#prevImage');
-        const nextImage = document.querySelector('#nextImage');
-
-        prevImage.addEventListener('click', (event) => {
-            event.preventDefault();
-            currentImageIndex = (currentImageIndex - 1 + numImages) % numImages;
-            image.src = imageUrls[currentImageIndex];
-            renderAnnotationDots(); // Call the function to render annotation dots for the current image.
-        });
-
-        nextImage.addEventListener('click', (event) => {
-            event.preventDefault();
-            currentImageIndex = (currentImageIndex + 1) % numImages;
-            image.src = imageUrls[currentImageIndex];
-            renderAnnotationDots(); // Call the function to render annotation dots for the current image.
-        });
-
-        updateArrowsVisibility();
-        renderAnnotationDots(); // Call the function initially to render annotation dots for the current image.
-    });
-</script>
-
-
-    </body>
-    </html>
-
+    </script>
 
 {% endblock %}
+
