@@ -116,7 +116,6 @@
         </form>
 
         <div class="buttons-container">
-            <button id="showPixelButton">Show Pixel Location</button>
             <button id="clearSingleAnnotationButton">Clear annotation</button>
             <button id="clearAllAnnotationsButton">Clear all annotations</button>
 
@@ -127,7 +126,7 @@
     <script>
 
     // ToDo: pass on information of pictures and annotated data only
-    // ToDo: remove buttons for pixel location etc.
+    // ToDo: remove text box?
     // ToDo: warning on leaving page for losing all annotation progress
     // ToDo: confirmation button for finishing annotation and starting segmentation
     // ToDo: create annotation site that lets you annotate all pictures immediately?
@@ -223,14 +222,6 @@
             };
 
             canvas.addEventListener('mousedown', handleMouseDown);
-
-            const showPixelButton = document.querySelector('#showPixelButton');
-            showPixelButton.addEventListener('click', () => {
-                const dot = dotPositions[dotPositions.length - 1];
-                const x = Math.round(dot.x);
-                const y = Math.round(dot.y);
-                alert(`Clicked Location: (${x}px, ${y}px)`);
-            });
 
             const clearAllAnnotationsButton = document.querySelector('#clearAllAnnotationsButton');
             clearAllAnnotationsButton.addEventListener('click', () => {
