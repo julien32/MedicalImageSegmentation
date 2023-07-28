@@ -117,7 +117,7 @@
 
         <div class="buttons-container">
             <button id="clearSingleAnnotationButton">Clear annotation</button>
-            <button id="clearAllAnnotationsButton">Clear all annotations</button>
+            <button id="clearAllAnnotationsButton" onclick= "return confirm('Are you sure you would like to remove all existing annotations?')">Clear all annotations</button>
 
             <input id="colorPicker" type="color">
         </div>
@@ -127,6 +127,7 @@
 
     // ToDo: pass on information of pictures and annotated data only
     // ToDo: remove text box?
+    // ToDo: grey out clear buttons if no annotation available to be cleared
     // ToDo: warning on leaving page for losing all annotation progress
     // ToDo: confirmation button for finishing annotation and starting segmentation
     // ToDo: create annotation site that lets you annotate all pictures immediately?
