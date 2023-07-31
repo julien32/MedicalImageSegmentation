@@ -121,7 +121,10 @@
                 all annotations
             </button>
 
+
             <input id="colorPicker" type="color">
+            <p>Number of annotated images</p>
+            <p id="annotatedImageCounter"></p>
         </div>
     </div>
 
@@ -134,10 +137,7 @@
         // ToDo: confirmation button for finishing annotation and starting segmentation
         // ToDo: create annotation site that lets you annotate all pictures immediately?
         // ToDo: add count of all current annotations
-        // ToDo: add small overview of which pictures have been annotated and which have not
         // ToDo: give user recap of status before sending info to be segmented
-        // ToDo: fix gallery image links over pictures
-        // ToDo: fix popup clear cancle still clearing all
 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -162,6 +162,9 @@
             const dotSize = 10; // Adjust the size of the dot as needed
             let dotPositions = []; // Array to store dot positions
             let dotColor = '#d50909'; // Default dot color (red)
+
+            const annotationCounter = document.querySelector('#annotatedImageCounter');
+            annotationCounter.textContent = dotPositions.length.toString();
 
             // investigate step where program displays image through position in array
             // can the selected image be mad first image somehow?
@@ -231,6 +234,7 @@
                 canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
                 // Update the dot positions input value
                 document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
+                annotationCounter.textContent = dotPositions.length.toString();
             };
 
             canvas.addEventListener('mousedown', handleMouseDown);
@@ -246,6 +250,7 @@
 
                     // Reattach the mouse click listener
                     canvas.addEventListener('mousedown', handleMouseDown);
+                    annotationCounter.textContent = dotPositions.length.toString();
                 }
 
             });
@@ -264,6 +269,7 @@
                         dotPositions.splice(i, 1);
                     }
                 }
+                annotationCounter.textContent = dotPositions.length.toString();
 
                 // Remove existing dot elements from the page
                 const dots = document.querySelectorAll('.circle');
