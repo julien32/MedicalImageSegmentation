@@ -117,7 +117,9 @@
 
         <div class="buttons-container">
             <button id="clearSingleAnnotationButton">Clear annotation</button>
-            <button id="clearAllAnnotationsButton" onclick= "return confirm('Are you sure you would like to remove all existing annotations?')">Clear all annotations</button>
+            <button id="clearAllAnnotationsButton">Clear
+                all annotations
+            </button>
 
             <input id="colorPicker" type="color">
         </div>
@@ -125,16 +127,17 @@
 
     <script>
 
-    // ToDo: pass on information of pictures and annotated data only
-    // ToDo: remove text box?
-    // ToDo: grey out clear buttons if no annotation available to be cleared
-    // ToDo: warning on leaving page for losing all annotation progress
-    // ToDo: confirmation button for finishing annotation and starting segmentation
-    // ToDo: create annotation site that lets you annotate all pictures immediately?
-    // ToDo: add count of all current annotations
-    // ToDo: add small overview of which pictures have been annotated and which have not
-    // ToDo: give user recap of status before sending info to be segmented
-    // ToDo: fix gallery image links over pictures
+        // ToDo: pass on information of pictures and annotated data only
+        // ToDo: remove text box?
+        // ToDo: grey out clear buttons if no annotation available to be cleared
+        // ToDo: warning on leaving page for losing all annotation progress
+        // ToDo: confirmation button for finishing annotation and starting segmentation
+        // ToDo: create annotation site that lets you annotate all pictures immediately?
+        // ToDo: add count of all current annotations
+        // ToDo: add small overview of which pictures have been annotated and which have not
+        // ToDo: give user recap of status before sending info to be segmented
+        // ToDo: fix gallery image links over pictures
+        // ToDo: fix popup clear cancle still clearing all
 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -151,7 +154,7 @@
             // get all image urls
             let imageUrls = [{% for pic in pictures %}"{{ pic.image.url }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
 
-            // calculate total number of images
+            // store total number of images
             const numImages = imageUrls.length;
 
             let currentImageIndex;
@@ -159,6 +162,10 @@
             const dotSize = 10; // Adjust the size of the dot as needed
             let dotPositions = []; // Array to store dot positions
             let dotColor = '#d50909'; // Default dot color (red)
+
+            // investigate step where program displays image through position in array
+            // can the selected image be mad first image somehow?
+            // does that change anything?
 
             // compare image urls to figure out at what position inside of image array current image is
             for (let i = 0; i < numImages; i++) {
@@ -230,14 +237,17 @@
 
             const clearAllAnnotationsButton = document.querySelector('#clearAllAnnotationsButton');
             clearAllAnnotationsButton.addEventListener('click', () => {
-                dotPositions = [];
+                if (window.confirm("Are you sure you would like to remove all existing annotations?")) {
+                    dotPositions = [];
 
-                // Remove existing dot elements from the page
-                const dots = document.querySelectorAll('.circle');
-                dots.forEach((dot) => dot.remove());
+                    // Remove existing dot elements from the page
+                    const dots = document.querySelectorAll('.circle');
+                    dots.forEach((dot) => dot.remove());
 
-                // Reattach the mouse click listener
-                canvas.addEventListener('mousedown', handleMouseDown);
+                    // Reattach the mouse click listener
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                }
+
             });
 
             const colorPicker = document.querySelector('#colorPicker');
