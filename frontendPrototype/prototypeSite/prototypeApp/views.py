@@ -43,16 +43,6 @@ def delete_images_confirm(request):
     return redirect('gallery')
 
 
-# def annotation_view(request, picture_id):
-# picture = Picture.objects.get(pk=picture_id)
-# if request.method == 'POST':
-# annotation = request.POST.get('annotation')
-# picture.annotation = annotation
-# picture.save()
-# return redirect('gallery')
-# return render(request, 'annotation.html', {'picture': picture})
-
-
 def annotation_view(request, picture_id):
     picture = get_object_or_404(Picture, id=picture_id)
     pictures = Picture.objects.all()
