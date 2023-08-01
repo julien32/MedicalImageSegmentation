@@ -69,6 +69,7 @@
     <div id="toolbar-right">
         <a href="/">About us</a>
         <a href="{% url 'gallery' %}">Images</a>
+        <a id="helpButton">Help</a>
         <a href="/admin/">Admin Site</a>
     </div>
 </div>
@@ -79,3 +80,24 @@
 </div>
 </body>
 </html>
+
+<script>
+    // Placeholder code for button functionality
+    document.addEventListener('DOMContentLoaded', () => {
+        const helpBtn = document.querySelector('#helpButton');
+
+        helpBtn.addEventListener('click', () => {
+            alert("1. Navigate to the gallery page by clicking on the image link in the toolbar.\n\n" +
+                "2. Upload and then click on an image to start the annotation process.\n\n" +
+                "3. Annotate all images you wish to segment by clicking on the images on the annotation screen and then click on submit.\n\n" +
+                "4. Look at resulting segmentations and download data if required. The results page is opened automatically once the image segmentation has taken place.")
+        });
+    });
+</script>
+
+<style>
+    #helpButton {
+        cursor: pointer;
+    }
+
+</style>
