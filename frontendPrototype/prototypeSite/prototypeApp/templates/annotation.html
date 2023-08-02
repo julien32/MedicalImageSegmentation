@@ -1,113 +1,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div>
-        <h1>Annotate Image</h1>
-
-        <div id="canvas-container">
-            <canvas id="canvas"></canvas>
-        </div>
-
-        <div id="canvas-container">
-            <canvas id="canvas"></canvas>
-        </div>
-
-        <form id="annotation-form" action="/submit" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="dotPositions" id="dotPositionsInput">
-            <textarea name="userText" id="userTextInput" placeholder="Enter your text"></textarea>
-            <button type="submit">Submit</button>
-        </form>
-
-        <button id="showPixelButton">Show Pixel Location</button>
-        <button id="printBottomRightButton">Print Bottom Right Corner</button>
-        <input id="colorPicker" type="color">
-        <button id="clearButton">Clear Dot</button>
-    </div>
-
-    <script>
-
-        const image = new Image();
-        image.src = "{{ picture.image.url }}";
-        image.addEventListener('load', () => {
-            const canvas = document.querySelector('#canvas');
-            const ctx = canvas.getContext('2d');
-
-            const aspectRatio = image.width / image.height;
-            const maxWidth = 800; // Maximum width for the canvas (adjust as needed)
-            const maxHeight = maxWidth / aspectRatio;
-
-            canvas.width = maxWidth;
-            canvas.height = maxHeight;
-
-            ctx.drawImage(image, 0, 0, maxWidth, maxHeight);
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const dotSize = 10; // Adjust the size of the dot as needed
-            let dotPositions = []; // Array to store dot positions
-            let dotColor = '#000000'; // Default dot color (red)
-
-            const handleMouseDown = (event) => {
-                const canvasRect = canvas.getBoundingClientRect();
-                const offsetX = event.clientX - canvasRect.left;
-                const offsetY = event.clientY - canvasRect.top;
-
-                // Store the dot position in the array
-                dotPositions.push({x: offsetX, y: offsetY});
-
-                const circle = document.createElement('div');
-                circle.classList.add('circle');
-                circle.style.left = `${offsetX - dotSize / 2}px`;
-                circle.style.top = `${offsetY - dotSize / 2}px`;
-                circle.style.backgroundColor = dotColor;
-                document.querySelector('#canvas-container').appendChild(circle);
-
-                canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
-                // Update the dot positions input value
-                document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
-            };
-
-            const canvas = document.querySelector('#canvas');
-            canvas.addEventListener('mousedown', handleMouseDown);
-
-            const showPixelButton = document.querySelector('#showPixelButton');
-            showPixelButton.addEventListener('click', () => {
-                const dot = dotPositions[dotPositions.length - 1];
-                const x = Math.round(dot.x);
-                const y = Math.round(dot.y);
-                alert(`Clicked Location: (${x}px, ${y}px)`);
-            });
-
-            const printBottomRightButton = document.querySelector('#printBottomRightButton');
-            printBottomRightButton.addEventListener('click', () => {
-                const x = canvas.width;
-                const y = canvas.height;
-                alert(`Bottom Right Corner: (${x}px, ${y}px)`);
-            });
-
-            const colorPicker = document.querySelector('#colorPicker');
-            colorPicker.addEventListener('change', (event) => {
-                dotColor = event.target.value;
-            });
-
-            const clearButton = document.querySelector('#clearButton');
-            clearButton.addEventListener('click', () => {
-                // Clear dot positions array
-                dotPositions = [];
-
-                // Remove existing dot elements from the page
-                const dots = document.querySelectorAll('.circle');
-                dots.forEach((dot) => dot.remove());
-
-                // Reattach the mouse click listener
-                canvas.addEventListener('mousedown', handleMouseDown);
-            });
-        });
-    </script>
-
     <style>
-        #canvas-container {
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .canvas-container {
             position: relative;
             width: 100%;
             max-width: 800px; /* Adjust the maximum width as needed */
@@ -117,7 +22,7 @@
 
         #canvas {
             display: block;
-            background: url("{{ image_url }}") no-repeat;
+            background: url("{{ picture.image.url }}") no-repeat;
             background-size: cover;
         }
 
@@ -128,13 +33,349 @@
             border-radius: 50%;
         }
 
-        #picture {
-            max-width: 100%;
-            max-height: 400px;
-            position: relative;
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
         }
+
+        .buttons-container button {
+            margin: 5px 5px;
+        }
+
+        /* hier kann man die hover animation von den buttons ändern */
+        #submit:hover, #showPixelButton:hover, #clearAllAnnotationsButton:hover, #clearSingleAnnotationButton:hover {
+            background-color: brown;
+        }
+
+        #submit, #clearAllAnnotationsButton, #clearSingleAnnotationButton {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            margin: 0.5rem;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1rem;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 0.25rem;
+        }
+
+        #clearAllAnnotationsButton:disabled, #clearSingleAnnotationButton:disabled {
+            background-color: #848484;
+        }
+
+        #userTextInput {
+            width: 100%;
+            height: 20px;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .nav-arrows {
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1;
+        }
+
+        #prevImage, #nextImage {
+            background-color: #4CAF50FF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+        }
+
+
     </style>
 
-{% endblock %}
+    <div class="container">
+        <h1>Annotate Image</h1>
 
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div class="nav-arrows">
+            <a href="#" id="prevImage" data-url="{% url 'annotation' prev_picture_id %}">&lt; Previous</a>
+            <a href="#" id="nextImage" data-url="{% url 'annotation' next_picture_id %}">Next &gt;</a>
+        </div>
+        <!-- When you click the submit button a python file gets triggered and then inference is run on the submitted picture -->
+        <!-- change path to the local one in you file system -->
+        <form action="C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_bash.py"
+              id="annotation-form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="dotPositions" id="dotPositionsInput">
+            <textarea name="userText" id="userTextInput" placeholder="Enter your text"></textarea>
+            <button type="submit">Submit</button>
+        </form>
+
+        <div class="buttons-container">
+            <button id="clearSingleAnnotationButton">Clear annotation</button>
+            <button id="clearAllAnnotationsButton">Clear
+                all annotations
+            </button>
+
+
+            <input id="colorPicker" type="color">
+            <p>Number of annotated images</p>
+            <p id="annotatedImageCounter"></p>
+        </div>
+    </div>
+
+    <script>
+
+        // ToDo: pass on information of pictures and annotated data only
+        // ToDo: remove text box?
+        // ToDo: Check that warning does not happen on clicking submit button
+        // ToDo: confirmation button for finishing annotation and starting segmentation
+        // ToDo: give user recap of status before sending info to be segmented
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.querySelector('#canvas');
+            const ctx = canvas.getContext('2d');
+
+            const image = new Image();
+            // get current image url
+            let currentImageURL = "{{ picture.image.url }}";
+
+            // Set current image url to source for image
+            image.src = currentImageURL;
+
+            // get all image urls
+            let imageUrls = [{% for pic in pictures %}"{{ pic.image.url }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+            // store total number of images
+            const numImages = imageUrls.length;
+
+            let currentImageIndex;
+
+            const dotSize = 10; // Adjust the size of the dot as needed
+            let dotPositions = []; // Array to store dot positions
+            let dotColor = '#d50909'; // Default dot color (red)
+
+            const annotationCounter = document.querySelector('#annotatedImageCounter');
+            annotationCounter.textContent = dotPositions.length.toString();
+
+            // investigate step where program displays image through position in array
+            // can the selected image be mad first image somehow?
+            // does that change anything?
+
+            // compare image urls to figure out at what position inside of image array current image is
+            for (let i = 0; i < numImages; i++) {
+
+                if (imageUrls[i] == currentImageURL) {
+                    currentImageIndex = i;
+                    break;
+                }
+            }
+
+            // Show image navigation arrows depending on number of images uploaded
+            const navArrows = document.querySelector('.nav-arrows');
+            if (numImages <= 1) {
+                navArrows.style.display = 'none';
+            } else {
+                navArrows.style.display = 'flex';
+            }
+
+            function renderExistingDots() {
+                if (dotPositions.length != 0) {
+
+                    for (let i = 0; i < dotPositions.length; i++) {
+                        if (dotPositions[i].currentImageURL === imageUrls[currentImageIndex]) {
+                            const circle = document.createElement('div');
+                            circle.classList.add('circle');
+                            circle.style.left = `${dotPositions[i].x - dotSize / 2}px`;
+                            circle.style.top = `${dotPositions[i].y - dotSize / 2}px`;
+                            circle.style.backgroundColor = dotColor;
+                            document.querySelector('.canvas-container').appendChild(circle);
+                            canvas.removeEventListener('mousedown', handleMouseDown);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            image.addEventListener('load', () => {
+                const aspectRatio = image.width / image.height;
+                const maxWidth = 800; // Maximum width for the canvas (adjust as needed)
+                const maxHeight = maxWidth / aspectRatio;
+
+                canvas.width = maxWidth;
+                canvas.height = maxHeight;
+
+                ctx.drawImage(image, 0, 0, maxWidth, maxHeight);
+            });
+
+            const handleMouseDown = (event) => {
+                clearSingleAnnotationButton.removeAttribute("disabled");
+                clearAllAnnotationsButton.removeAttribute("disabled");
+
+                const canvasRect = canvas.getBoundingClientRect();
+                const offsetX = event.clientX - canvasRect.left;
+                const offsetY = event.clientY - canvasRect.top;
+
+                // Store the dot position in the array
+                dotPositions.push({currentImageURL, x: offsetX, y: offsetY});
+
+                const circle = document.createElement('div');
+                circle.classList.add('circle');
+                circle.style.left = `${offsetX - dotSize / 2}px`;
+                circle.style.top = `${offsetY - dotSize / 2}px`;
+                circle.style.backgroundColor = dotColor;
+                document.querySelector('.canvas-container').appendChild(circle);
+
+                canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
+                // Update the dot positions input value
+                document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
+                annotationCounter.textContent = dotPositions.length.toString();
+            };
+
+            canvas.addEventListener('mousedown', handleMouseDown);
+
+            const clearAllAnnotationsButton = document.querySelector('#clearAllAnnotationsButton');
+            clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+            clearAllAnnotationsButton.addEventListener('click', () => {
+                if (dotPositions.length > 0) {
+
+
+                    if (window.confirm("Are you sure you would like to remove all existing annotations?")) {
+                        dotPositions = [];
+
+                        // Remove existing dot elements from the page
+                        const dots = document.querySelectorAll('.circle');
+                        dots.forEach((dot) => dot.remove());
+
+                        // Reattach the mouse click listener
+                        canvas.addEventListener('mousedown', handleMouseDown);
+                        annotationCounter.textContent = dotPositions.length.toString();
+                        if (dotPositions.length == 0) {
+                            clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+                            clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                        }
+                    }
+
+                }
+
+            });
+
+            const colorPicker = document.querySelector('#colorPicker');
+            colorPicker.addEventListener('change', (event) => {
+                dotColor = event.target.value;
+            });
+
+            const clearSingleAnnotationButton = document.querySelector('#clearSingleAnnotationButton');
+            clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+
+            clearSingleAnnotationButton.addEventListener('click', () => {
+
+                    // Clear dot position for current image
+                    // Disable clear single annotation for current image if no annotation is present
+                    for (let i = 0; i < dotPositions.length; i++) {
+                        if (dotPositions[i].currentImageURL == imageUrls[currentImageIndex]) {
+                            dotPositions.splice(i, 1);
+                        }
+                    }
+
+
+                    // Disable clear buttons if no annotation are present
+                    annotationCounter.textContent = dotPositions.length.toString();
+                    if (dotPositions.length == 0) {
+                        clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                        clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+                    }
+
+                    // Remove existing dot elements from the page
+                    const dots = document.querySelectorAll('.circle');
+                    dots.forEach((dot) => dot.remove());
+
+                    // Reattach the mouse click listener
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                    // Disable single click clear button if used on single image
+                    clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                }
+            )
+            ;
+
+            const prevImage = document.querySelector('#prevImage');
+            const nextImage = document.querySelector('#nextImage');
+
+            // Change image being displayed on canvas when clicking next or previous image button
+            prevImage.addEventListener('click', (event) => {
+                currentImageIndex -= 1;
+
+                if (currentImageIndex < 0) {
+                    currentImageIndex = numImages - 1;
+                }
+
+                currentImageURL = imageUrls[currentImageIndex];
+                image.src = currentImageURL;
+
+                // Remove existing dot elements from the page
+                const dots = document.querySelectorAll('.circle');
+                dots.forEach((dot) => dot.remove());
+
+                renderExistingDots();
+
+                // if no existing dots are available for image, make annotation possible
+                if (!renderExistingDots()) {
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                    clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                } else {
+                    clearSingleAnnotationButton.removeAttribute("disabled");
+                }
+            });
+
+            nextImage.addEventListener('click', (event) => {
+                currentImageIndex += 1;
+
+                if (currentImageIndex >= numImages) {
+                    currentImageIndex = 0;
+                }
+
+                currentImageURL = imageUrls[currentImageIndex];
+                image.src = currentImageURL;
+
+                // Remove existing dot elements from the page
+                const dots = document.querySelectorAll('.circle');
+                dots.forEach((dot) => dot.remove());
+
+                renderExistingDots();
+
+                // if no existing dots are available for image, make annotation possible
+                if (!renderExistingDots()) {
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                    clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                } else {
+                    clearSingleAnnotationButton.removeAttribute("disabled");
+                }
+            });
+
+            // Function keeping the user from accidentally leaving page after annotations
+            var dontLeave = function (e) {
+                return "Annotations you made may not be saved.";
+            }
+
+            window.onbeforeunload = dontLeave;
+        });
+
+        // ToDo: move script into web file directory
+        // ToDo: try php access
+        // ToDo: try letting it run over JS
+        // ToDo: merge with main
+
+
+    </script>
+
+{% endblock %}
 

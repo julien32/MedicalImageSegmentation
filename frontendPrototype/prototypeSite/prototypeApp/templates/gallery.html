@@ -1,46 +1,229 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div>
-        <h1>Image Gallery</h1>
+    <div id="main-container">
+        <div id="upload-container">
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Upload Pictures</h1>
+            <form method="post" enctype="multipart/form-data" style="text-align: center;">
+                {% csrf_token %}
+                <div class="form-group">
 
-
-        <div id="gallery">
-            {% for picture in pictures %}
-                <div class="image-wrapper">
-                    <a href="{% url 'annotation' picture.id %}">
-                        <img src="{{ picture.image.url }}" width="200" height="200" alt="Image">
-                    </a>
+                    <input type="file" name="images" accept="image/*" multiple required style="margin-bottom: 1rem; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
+                    <br>
+                    <input type="submit" id="upload-button" value="Upload" onclick="animateButton(this);"
+                           style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
                 </div>
-            {% endfor %}
+            </form>
+
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Delete Images</h1>
+
+                <button id="delete-button" type="submit" form="delete-form" style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
+                Delete Selected Images</button>
+
         </div>
 
+        <div id="gallery-container">
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Image Gallery</h1>
+            <form id="delete-form" method="post" action="{% url 'delete_images' %}">
+                {% csrf_token %}
+                <div id="image-gallery">
+                    {% for picture in pictures %}
+                        <div class="gallery-item">
+                            <a href="{% url 'annotation' picture.id %}">
+                                <img src="{{ picture.image.url }}" alt="Image" >
+                            </a>
+                            <div class="image-title">
+                                <a href="{% url 'annotation' picture.id %}" class="text-link">
+                                    {{ picture.image.name }}
+                                </a>
+                            </div>
+                            <input type="checkbox" name="selected_images" value="{{ picture.id }}">
+                        </div>
+                        {% empty %}
+                        <p>No images found in the gallery.</p>
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
     </div>
 
+    <script>
+        function animateButton(button) {
+            button.classList.add('animated');
+            setTimeout(function () {
+                button.classList.remove('animated');
+            }, 500);
+        }
+    </script>
+
     <style>
-        body {
-            margin: 0;
-            padding: 0;
+
+        @keyframes buttonAnimation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
 
-        #gallery {
+        #main-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: flex-start;
+            align-items: flex-start; /* Align items at the top */
         }
 
-        .image-wrapper {
-            flex-basis: 25%;
+        #upload-container {
+            flex-basis: 40%; /* Adjust the width as needed */
+            margin-right: 20px; /* Add some spacing between the form and gallery */
+            text-align: center;
+            padding-right: 10px; /* Add some padding to separate the content from the border */
+        }
+
+        #upload-container h2 {
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-top: 5px;
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+
+        input[type="submit"] {
+            background-color: #4CAF50FF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #delete-button {
+            background-color: #4CAF50FF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #upload-container, #gallery-container {
+            flex: 1;
+            padding: 20px;
+        }
+
+        #upload-container form {
+            margin-bottom: 20px;
+        }
+
+        #image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            justify-items: center;
+            border-left: 2px solid #4CAF50; /* Add vertical border */
+        }
+
+
+        .gallery-item {
+            width: 250px;
             padding: 10px;
             box-sizing: border-box;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            margin-left: 25px;
+        }
+        .gallery-item:hover{
+            transform: scale(1.15);
         }
 
-        .image-wrapper img {
+        .gallery-item img {
             display: block;
-            max-width: 100%;
+            width: 100%;
             height: auto;
+            border-radius: 5px;
         }
+
+        .image-title {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .text-link {
+            text-decoration: none;
+            color: #666;
+            cursor: pointer;
+        }
+
+        #gallery-container {
+            flex-basis: 60%; /* Adjust the width as needed */
+            text-align: center;
+            position: relative; /* Add position relative */
+        }
+
+        #upload-button:hover{
+            transform: scale(1.1);
+        } 
+        
+        #delete-button:hover{
+            transform: scale(1.1);
+        }
+
+
+
+
     </style>
+
+    <script>
+     // Enable delete button if at least one image is selected
+    const deleteForm = document.getElementById('delete-form');
+    const deleteButton = document.getElementById('delete-button');
+    const checkboxes = deleteForm.querySelectorAll('input[type="checkbox"]');
+
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const selectedImages = Array.from(checkboxes).some(cb => cb.checked);
+        deleteButton.disabled = !selectedImages;
+      });
+    });
+
+    // Prevent form submission if no checkbox is checked
+    deleteForm.addEventListener('submit', (event) => {
+      if (!Array.from(checkboxes).some(cb => cb.checked)) {
+        event.preventDefault();
+        alert('Please select at least one image to delete.');
+      }
+    });
+  </script>
 {% endblock %}
-
-

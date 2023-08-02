@@ -6,7 +6,7 @@ Frontend Website for Medical Image one click segmentation project using SAM by M
 
 Commands:
 
-run virtual environment (dir: "in überfolder von prototypeVirtualEnvironment"): venv\Scripts\activate
+run virtual environment (dir: "in überfolder von prototypeVirtualEnvironment"): prototypeVirtualEnvironment\Scripts\activate
 
 
 migrate (dir: ".../prototypeSite"): python manage.py makemigrations
