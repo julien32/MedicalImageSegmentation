@@ -75,6 +75,9 @@ def annotation_view(request, picture_id):
 
         return JsonResponse({'success': True})
 
+    # Collect the array list of data points with image ID, X, and Y coordinates
+    data_points = [{'id': pic.id, 'x': pic.x_coordinate, 'y': pic.y_coordinate} for pic in pictures]
+
     context = {
         'picture': picture,
         'num_images': num_images,
@@ -82,6 +85,7 @@ def annotation_view(request, picture_id):
         'prev_picture_id': prev_id,
         'next_picture_id': next_id,
         'pictures': pictures,
+        'data_points_json': json.dumps(data_points),  # Convert data_points to a JSON string
     }
 
     print("arrived in annotation view")
@@ -91,9 +95,12 @@ def annotation_view(request, picture_id):
 def submit_annotation(request):
     print("in anno post method")
     if request.method == 'POST':
+        data_points_json = request.POST.get('data_points_json')
+        data_points = json.loads(data_points_json)
         dot_positions = request.POST.get('dotPositions')
 
         print('Dot Positions:', dot_positions)
+        print("Data Points: ", data_points)
         subprocess.call(
             "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh",
             shell=True)
@@ -101,9 +108,13 @@ def submit_annotation(request):
         # ToDo: save results as array -> mask + image link
         # Loop through images to get images needed to be rendered
 
+        context = {
+            'data_points': data_points,
+        }
+
         # return HttpResponse('Annotation submitted successfully.')
         print("going to results")
-        return redirect('result')
+        return redirect('result', context)
 
     # Return an error response if the request method is not POST
     return HttpResponse('Invalid request method.')

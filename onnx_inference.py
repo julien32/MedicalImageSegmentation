@@ -37,7 +37,7 @@ assert len(prompts_y) == len(prompts_x) == len(
 ort_session = onnxruntime.InferenceSession(args.onnx_checkpoint)
 
 # load model
-checkpoint = "/mnt/shared/lswezel/checkpoints/sam_full2.pth"
+checkpoint = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/sam_vit_b_01ec64.pth"
 model_type = "vit_b"
 sam = sam_model_registry[model_type](checkpoint=checkpoint)
 sam.to(device='cpu')
