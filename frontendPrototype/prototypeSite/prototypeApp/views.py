@@ -45,6 +45,7 @@ def delete_images_confirm(request):
 
 
 def annotation_view(request, picture_id):
+    print("Going to annotation view")
     picture = get_object_or_404(Picture, id=picture_id)
     pictures = Picture.objects.all()
     num_images = pictures.count()
@@ -71,7 +72,6 @@ def annotation_view(request, picture_id):
         picture.x_coordinate = x_coordinate
         picture.y_coordinate = y_coordinate
         picture.save()
-        print("question method")
 
         return JsonResponse({'success': True})
 
@@ -84,10 +84,12 @@ def annotation_view(request, picture_id):
         'pictures': pictures,
     }
 
+    print("arrived in annotation view")
     return render(request, 'annotation.html', context)
 
 
 def submit_annotation(request):
+    print("in anno post method")
     if request.method == 'POST':
         dot_positions = request.POST.get('dotPositions')
 
@@ -101,7 +103,7 @@ def submit_annotation(request):
 
         # return HttpResponse('Annotation submitted successfully.')
         print("going to results")
-        return render(request, 'result.html')
+        return redirect('result')
 
     # Return an error response if the request method is not POST
     return HttpResponse('Invalid request method.')
@@ -112,6 +114,7 @@ def base(request):
 
 
 def result(request):
+    print("arrived in results")
     dot_positions = request.POST.get('dotPositions')
     print("result dot positions: ", dot_positions)
 
