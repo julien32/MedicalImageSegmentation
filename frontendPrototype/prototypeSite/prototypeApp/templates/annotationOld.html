@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <style>
+        .circle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: red;
+            transform: translate(-50%, -50%);
+        }
+
+        .annotation-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .annotation-container img {
+            max-width: 100%;
+            max-height: 400px; /* Adjust the height as per your requirement */
+            object-fit: contain;
+        }
+
+        .nav-arrows {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1;
+        }
+    </style>
+    </head>
+    <!-- ... (previous parts of the template) ... -->
+
+    <body>
+    <h1>Annotate Image</h1>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <div class="nav-arrows">
+        <a href="#" id="prevImage" data-url="{% url 'annotation' prev_picture_id %}">&lt; Previous</a>
+        <a href="#" id="nextImage" data-url="{% url 'annotation' next_picture_id %}">Next &gt;</a>
+    </div>
+    <div class="annotation-container">
+        <img src="{{ picture.image.url }}" id="picture">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const image = document.querySelector('#picture');
+            const annotationContainer = document.querySelector('.annotation-container');
+            const numImages = {{ num_images }};
+            let currentImageIndex = parseInt("{{ current_image_index }}");
+            const imageUrls = [{% for pic in pictures %}"{{ pic.image.url }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+            const xCoordinates = [{% for pic in pictures %}{{ pic.x_coordinate|default:-1 }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+            const yCoordinates = [{% for pic in pictures %}{{ pic.y_coordinate|default:-1 }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+            function printAnnotationValues(x, y) {
+                console.log('Annotation values:');
+                console.log('X Coordinate:', x);
+                console.log('Y Coordinate:', y);
+            }
+
+            function updateArrowsVisibility() {
+                const navArrows = document.querySelector('.nav-arrows');
+                if (numImages <= 1) {
+                    navArrows.style.display = 'none';
+                } else {
+                    navArrows.style.display = 'flex';
+                }
+            }
+
+            function renderAnnotationDots() {
+                // Clear existing circles from the annotationContainer
+                const existingCircles = annotationContainer.querySelectorAll('.circle');
+                existingCircles.forEach(circle => circle.remove());
+
+                // Display annotation dots for the current image
+                const x = xCoordinates[currentImageIndex];
+                const y = yCoordinates[currentImageIndex];
+                if (x >= 0 && y >= 0) {
+                    const circle = document.createElement('div');
+                    circle.classList.add('circle');
+                    circle.style.left = `${x * 100}%`; // Convert relative coordinates to percentages
+                    circle.style.top = `${y * 100}%`;
+                    annotationContainer.appendChild(circle);
+                }
+            }
+
+            function updateImageAndForm() {
+                // Save the annotation dots for the current image before moving to the next image
+                const x = parseFloat(annotationContainer.querySelector('.circle').style.left) / 100;
+                const y = parseFloat(annotationContainer.querySelector('.circle').style.top) / 100;
+
+                fetch("{% url 'annotation' picture.id %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': "{{ csrf_token }}",
+                    },
+                    body: JSON.stringify({
+                        x_coordinate: x,
+                        y_coordinate: y,
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Annotation dots saved successfully!');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saving annotation dots:', error);
+                    });
+            }
+
+            image.addEventListener('click', (event) => {
+                if (event.detail === 1) { // Single-click for annotation dots
+                    const rect = image.getBoundingClientRect();
+                    const posX = (event.clientX - rect.left) / rect.width; // Calculate relative coordinates
+                    const posY = (event.clientY - rect.top) / rect.height;
+                    const circle = document.createElement('div');
+                    circle.classList.add('circle');
+                    circle.style.left = `${posX * 100}%`; // Convert relative coordinates to percentages
+                    circle.style.top = `${posY * 100}%`;
+                    annotationContainer.appendChild(circle);
+
+                    printAnnotationValues(posX, posY); // Print the annotation values for the current image.
+                    updateImageAndForm(); // Save the annotation dots for the current image.
+                }
+            });
+
+            const prevImage = document.querySelector('#prevImage');
+            const nextImage = document.querySelector('#nextImage');
+
+            prevImage.addEventListener('click', (event) => {
+                event.preventDefault();
+                currentImageIndex = (currentImageIndex - 1 + numImages) % numImages;
+                image.src = imageUrls[currentImageIndex];
+                renderAnnotationDots(); // Call the function to render annotation dots for the current image.
+            });
+
+            nextImage.addEventListener('click', (event) => {
+                event.preventDefault();
+                currentImageIndex = (currentImageIndex + 1) % numImages;
+                image.src = imageUrls[currentImageIndex];
+                renderAnnotationDots(); // Call the function to render annotation dots for the current image.
+            });
+
+            updateArrowsVisibility();
+            renderAnnotationDots(); // Call the function initially to render annotation dots for the current image.
+        });
+    </script>
+
+{% endblock %}

@@ -1,19 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My App</title>
+    <title>My App</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+        }
+
+        #toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #4CAF50;
+            padding: 10px;
+            color: #fff;
+        }
+
+        #toolbar-left {
+            display: flex;
+            align-items: center;
+        }
+
+        #toolbar-left a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        #toolbar-right {
+            display: flex;
+            align-items: center;
+            color: #fff;
+        }
+
+        #toolbar-right a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        #toolbar-right a::after {
+            content: "|";
+            margin-left: 10px;
+            color: #fff;
+        }
+
+        #toolbar-right a:last-child::after {
+            content: none;
+        }
+
+        #toolbar-left a:first-child {
+            font-size: 24px;
+            font-weight: bold;
+            border-right: none;
+            padding-right: 0;
+        }
+    </style>
 </head>
 <body>
-  <div>
-    <h1>Welcome to My App</h1>
-    <a href="{% url 'upload' %}"><button>Upload</button></a>
-    <a href="{% url 'gallery' %}"><button>Gallery</button></a>
-    <a href="/admin/"><button>Admin Site</button></a>
-  </div>
+<div id="toolbar">
+    <div id="toolbar-left">
+        <a id="header" href="/">My App</a>
+    </div>
+    <div id="toolbar-right">
+        <a href="/">About us</a>
+        <a href="{% url 'gallery' %}">Images</a>
+        <a id="helpButton">Help</a>
+        <a href="/admin/">Admin Site</a>
+    </div>
+</div>
 
-  <div>
+<div id="content">
     {% block content %}
     {% endblock %}
-  </div>
+</div>
 </body>
 </html>
+
+<script>
+    // Placeholder code for button functionality
+    document.addEventListener('DOMContentLoaded', () => {
+        const helpBtn = document.querySelector('#helpButton');
+
+        helpBtn.addEventListener('click', () => {
+            alert("1. Navigate to the gallery page by clicking on the image link in the toolbar.\n\n" +
+                "2. Upload and then click on an image to start the annotation process.\n\n" +
+                "3. Annotate all images you wish to segment by clicking on the images on the annotation screen and then click on submit.\n\n" +
+                "4. Look at resulting segmentations and download data if required. The results page is opened automatically once the image segmentation has taken place.")
+        });
+    });
+</script>
+
+<style>
+    #helpButton {
+        cursor: pointer;
+    }
+
+</style>
