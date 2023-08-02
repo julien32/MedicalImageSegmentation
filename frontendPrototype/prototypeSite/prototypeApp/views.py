@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 import json
+import subprocess
 from django.http import JsonResponse
 
 from .models import Picture
@@ -70,6 +71,7 @@ def annotation_view(request, picture_id):
         picture.x_coordinate = x_coordinate
         picture.y_coordinate = y_coordinate
         picture.save()
+        print("question method")
 
         return JsonResponse({'success': True})
 
@@ -88,12 +90,18 @@ def annotation_view(request, picture_id):
 def submit_annotation(request):
     if request.method == 'POST':
         dot_positions = request.POST.get('dotPositions')
-        user_text = request.POST.get('userText')
 
         print('Dot Positions:', dot_positions)
-        print('User Text:', user_text)
+        subprocess.call(
+            "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh",
+            shell=True)
 
-        return HttpResponse('Annotation submitted successfully.')
+        # ToDo: save results as array -> mask + image link
+        # Loop through images to get images needed to be rendered
+
+        # return HttpResponse('Annotation submitted successfully.')
+        print("going to results")
+        return render(request, 'result.html')
 
     # Return an error response if the request method is not POST
     return HttpResponse('Invalid request method.')
@@ -104,4 +112,33 @@ def base(request):
 
 
 def result(request):
+    dot_positions = request.POST.get('dotPositions')
+    print("result dot positions: ", dot_positions)
+
+    pictures = Picture.objects.all()
+    num_images = pictures.count()
+    allDotPositions = dot_positions
+    imageLinks = []
+
+    current_index = None
+    prev_id = None
+    next_id = None
+
+    if current_index is not None:
+        prev_index = (current_index - 1 + num_images) % num_images
+        next_index = (current_index + 1) % num_images
+
+        prev_id = pictures[prev_index].id
+        next_id = pictures[next_index].id
+
+        return JsonResponse({'success': True})
+
+    context = {
+        'num_images': num_images,
+        'current_image_index': current_index,
+        'prev_picture_id': prev_id,
+        'next_picture_id': next_id,
+        'pictures': pictures,
+    }
+
     return render(request, 'result.html')

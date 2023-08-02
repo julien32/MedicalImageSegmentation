@@ -111,11 +111,9 @@
         </div>
         <!-- When you click the submit button a python file gets triggered and then inference is run on the submitted picture -->
         <!-- change path to the local one in you file system -->
-        <form action="C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_bash.py"
-              id="annotation-form" method="post">
+        <form id="annotation-form" action="/submit" method="post">
             {% csrf_token %}
             <input type="hidden" name="dotPositions" id="dotPositionsInput">
-            <textarea name="userText" id="userTextInput" placeholder="Enter your text"></textarea>
             <button type="submit">Submit</button>
         </form>
 
@@ -269,6 +267,13 @@
 
             });
 
+            const formSubmission = document.querySelector('#annotation-form');
+            formSubmission.addEventListener('click', () => {
+                alert("here")
+                // ToDo: implement python script here
+                // ToDo: remove if not needed
+                });
+
             const colorPicker = document.querySelector('#colorPicker');
             colorPicker.addEventListener('change', (event) => {
                 dotColor = event.target.value;
@@ -372,7 +377,6 @@
         // ToDo: move script into web file directory
         // ToDo: try php access
         // ToDo: try letting it run over JS
-        // ToDo: merge with main
 
 
     </script>

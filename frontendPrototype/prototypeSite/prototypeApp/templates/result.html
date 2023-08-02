@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
+
 {% block content %}
+    <h1>Results</h1>
     <div class="image-container">
-        <img src="https://technical.sanguinebio.com/wp-content/uploads/2013/10/brain.scan_.jpg" alt="Image">
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="nav-arrows">
     </div>
 
     <div class="button-container">
@@ -10,8 +14,9 @@
     </div>
 
     <script>
-        // Placeholder code for button functionality
+
         document.addEventListener('DOMContentLoaded', () => {
+
             const toggleButton = document.querySelector('#toggleButton');
             const downloadButton = document.querySelector('#downloadButton');
 
@@ -24,22 +29,264 @@
             });
 
             // ToDo: implement navigation between resulting images with arrows -> toggle function between mask and no mask
+
+            const canvas = document.querySelector('#canvas');
+            const ctx = canvas.getContext('2d');
+
+            const image = new Image();
+            // get current image url
+            let currentImageURL = "{{ picture.image.url }}";
+
+            // Set current image url to source for image
+            image.src = currentImageURL;
+
+            // get all image urls
+            let imageUrls = [{% for pic in pictures %}"{{ pic.image.url }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+            // store total number of images
+            const numImages = imageUrls.length;
+
+            let currentImageIndex;
+
+            const dotSize = 10; // Adjust the size of the dot as needed
+            let dotPositions = []; // Array to store dot positions
+            let dotColor = '#d50909'; // Default dot color (red)
+
+            const annotationCounter = document.querySelector('#annotatedImageCounter');
+            annotationCounter.textContent = dotPositions.length.toString();
+
+            // investigate step where program displays image through position in array
+            // can the selected image be mad first image somehow?
+            // does that change anything?
+
+            // compare image urls to figure out at what position inside of image array current image is
+            for (let i = 0; i < numImages; i++) {
+
+                if (imageUrls[i] == currentImageURL) {
+                    currentImageIndex = i;
+                    break;
+                }
+            }
+
+            // Show image navigation arrows depending on number of images uploaded
+            const navArrows = document.querySelector('.nav-arrows');
+            if (numImages <= 1) {
+                navArrows.style.display = 'none';
+            } else {
+                navArrows.style.display = 'flex';
+            }
+
+            function renderExistingDots() {
+                if (dotPositions.length != 0) {
+
+                    for (let i = 0; i < dotPositions.length; i++) {
+                        if (dotPositions[i].currentImageURL === imageUrls[currentImageIndex]) {
+                            const circle = document.createElement('div');
+                            circle.classList.add('circle');
+                            circle.style.left = `${dotPositions[i].x - dotSize / 2}px`;
+                            circle.style.top = `${dotPositions[i].y - dotSize / 2}px`;
+                            circle.style.backgroundColor = dotColor;
+                            document.querySelector('.canvas-container').appendChild(circle);
+                            canvas.removeEventListener('mousedown', handleMouseDown);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            image.addEventListener('load', () => {
+                const aspectRatio = image.width / image.height;
+                const maxWidth = 800; // Maximum width for the canvas (adjust as needed)
+                const maxHeight = maxWidth / aspectRatio;
+
+                canvas.width = maxWidth;
+                canvas.height = maxHeight;
+
+                ctx.drawImage(image, 0, 0, maxWidth, maxHeight);
+            });
+
+            const handleMouseDown = (event) => {
+                clearSingleAnnotationButton.removeAttribute("disabled");
+                clearAllAnnotationsButton.removeAttribute("disabled");
+
+                const canvasRect = canvas.getBoundingClientRect();
+                const offsetX = event.clientX - canvasRect.left;
+                const offsetY = event.clientY - canvasRect.top;
+
+                // Store the dot position in the array
+                dotPositions.push({currentImageURL, x: offsetX, y: offsetY});
+
+                const circle = document.createElement('div');
+                circle.classList.add('circle');
+                circle.style.left = `${offsetX - dotSize / 2}px`;
+                circle.style.top = `${offsetY - dotSize / 2}px`;
+                circle.style.backgroundColor = dotColor;
+                document.querySelector('.canvas-container').appendChild(circle);
+
+                canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
+                // Update the dot positions input value
+                document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
+                annotationCounter.textContent = dotPositions.length.toString();
+            };
+
+            canvas.addEventListener('mousedown', handleMouseDown);
+
+            const clearAllAnnotationsButton = document.querySelector('#clearAllAnnotationsButton');
+            clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+            clearAllAnnotationsButton.addEventListener('click', () => {
+                if (dotPositions.length > 0) {
+
+
+                    if (window.confirm("Are you sure you would like to remove all existing annotations?")) {
+                        dotPositions = [];
+
+                        // Remove existing dot elements from the page
+                        const dots = document.querySelectorAll('.circle');
+                        dots.forEach((dot) => dot.remove());
+
+                        // Reattach the mouse click listener
+                        canvas.addEventListener('mousedown', handleMouseDown);
+                        annotationCounter.textContent = dotPositions.length.toString();
+                        if (dotPositions.length == 0) {
+                            clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+                            clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                        }
+                    }
+
+                }
+
+            });
+
+            const formSubmission = document.querySelector('#annotation-form');
+            formSubmission.addEventListener('click', () => {
+                alert("here")
+                // ToDo: implement python script here
+                // ToDo: remove if not needed
+            });
+
+            const colorPicker = document.querySelector('#colorPicker');
+            colorPicker.addEventListener('change', (event) => {
+                dotColor = event.target.value;
+            });
+
+            const clearSingleAnnotationButton = document.querySelector('#clearSingleAnnotationButton');
+            clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+
+            clearSingleAnnotationButton.addEventListener('click', () => {
+
+                    // Clear dot position for current image
+                    // Disable clear single annotation for current image if no annotation is present
+                    for (let i = 0; i < dotPositions.length; i++) {
+                        if (dotPositions[i].currentImageURL == imageUrls[currentImageIndex]) {
+                            dotPositions.splice(i, 1);
+                        }
+                    }
+
+
+                    // Disable clear buttons if no annotation are present
+                    annotationCounter.textContent = dotPositions.length.toString();
+                    if (dotPositions.length == 0) {
+                        clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                        clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+                    }
+
+                    // Remove existing dot elements from the page
+                    const dots = document.querySelectorAll('.circle');
+                    dots.forEach((dot) => dot.remove());
+
+                    // Reattach the mouse click listener
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                    // Disable single click clear button if used on single image
+                    clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                }
+            )
+            ;
+
+            const prevImage = document.querySelector('#prevImage');
+            const nextImage = document.querySelector('#nextImage');
+
+            // Change image being displayed on canvas when clicking next or previous image button
+            prevImage.addEventListener('click', (event) => {
+                currentImageIndex -= 1;
+
+                if (currentImageIndex < 0) {
+                    currentImageIndex = numImages - 1;
+                }
+
+                currentImageURL = imageUrls[currentImageIndex];
+                image.src = currentImageURL;
+
+                // Remove existing dot elements from the page
+                const dots = document.querySelectorAll('.circle');
+                dots.forEach((dot) => dot.remove());
+
+                renderExistingDots();
+
+                // if no existing dots are available for image, make annotation possible
+                if (!renderExistingDots()) {
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                    clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                } else {
+                    clearSingleAnnotationButton.removeAttribute("disabled");
+                }
+            });
+
+            nextImage.addEventListener('click', (event) => {
+                currentImageIndex += 1;
+
+                if (currentImageIndex >= numImages) {
+                    currentImageIndex = 0;
+                }
+
+                currentImageURL = imageUrls[currentImageIndex];
+                image.src = currentImageURL;
+
+                // Remove existing dot elements from the page
+                const dots = document.querySelectorAll('.circle');
+                dots.forEach((dot) => dot.remove());
+
+                renderExistingDots();
+
+                // if no existing dots are available for image, make annotation possible
+                if (!renderExistingDots()) {
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                    clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                } else {
+                    clearSingleAnnotationButton.removeAttribute("disabled");
+                }
+            });
+
+            // Function keeping the user from accidentally leaving page after annotations
+            var dontLeave = function (e) {
+                return "Annotations you made may not be saved.";
+            }
+
+            window.onbeforeunload = dontLeave;
         });
+
+        // ToDo: move script into web file directory
+        // ToDo: try php access
+        // ToDo: try letting it run over JS
+
+
     </script>
 
     <style>
         .image-container {
             text-align: center;
         }
+
         .image-container img {
             padding-top: 20px;
             width: auto;
             height: 400px;
         }
+
         .button-container {
             text-align: center;
             margin-top: 10px;
         }
+
         .button-container button {
             margin-right: 10px;
         }
@@ -55,7 +302,7 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-         #downloadButton {
+        #downloadButton {
             background-color: #4CAF50FF;
             color: #fff;
             padding: 10px 20px;
