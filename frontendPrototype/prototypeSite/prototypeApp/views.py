@@ -105,6 +105,9 @@ def submit_annotation(request):
             "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh",
             shell=True)
 
+        # onnx_inference.py--onnx-checkpoint "C:\Users\danie\Desktop\Master\Master SoSe 2023\Machine Learning in Graphics, Vision and Language\GithubTeamCode\sam_finetuned.onnx" - -input_df
+        # example_user_input.csv
+
         # ToDo: save results as array -> mask + image link
         # Loop through images to get images needed to be rendered
 
