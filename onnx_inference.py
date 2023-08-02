@@ -45,6 +45,7 @@ predictor = SamPredictor(sam)
 
 plot_imgs = []
 plot_masks = []
+plot_masks_raw = []
 plot_points = []
 plot_labels = []
 plot_paths = []
@@ -100,6 +101,15 @@ for i, img_path in enumerate(image_paths):
 
     # run inference
     masks, _, low_res_logits = ort_session.run(None, ort_inputs)
+    normalized_masks = (masks - masks.min()) / (masks.max() - masks.min())
+    normalized_masks *= 255
+    normalized_masks = normalized_masks.astype(np.uint8)
+    # Convert to numpy and save 
+    plot_masks_raw.append(normalized_masks[0][0])
+
+
+    
+
     masks = masks > predictor.model.mask_threshold
 
     # store predicted mask to be shown later
@@ -114,5 +124,16 @@ for j in range(len(plot_imgs)):
     ax.axis('off')
     plt.savefig(os.path.join("predictions",
                              f"prediction_{plot_paths[j].split('/')[-1]}"),
+                bbox_inches='tight',
+                pad_inches=0)
+
+
+# save masks
+for j in range(len(plot_masks_raw)):
+    fig, ax = plt.subplots()
+    ax.imshow(plot_masks_raw[j])
+    ax.axis('off')
+    plt.savefig(os.path.join("predictions",
+                             f"mask_{plot_paths[j].split('/')[-1]}"),
                 bbox_inches='tight',
                 pad_inches=0)
