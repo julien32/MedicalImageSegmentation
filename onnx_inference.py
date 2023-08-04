@@ -8,6 +8,7 @@ import utils
 import pandas as pd
 import matplotlib.pyplot as plt
 import utils
+import re
 
 parser = argparse.ArgumentParser("Run onnxruntime inference sess")
 parser.add_argument("--onnx-checkpoint",
@@ -54,6 +55,7 @@ for i, img_path in enumerate(image_paths):
 
     # iterate over images
     # load image
+    print("image path: ", img_path)
     image = cv2.imread(img_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -105,6 +107,8 @@ for i, img_path in enumerate(image_paths):
     # store predicted mask to be shown later
     plot_masks.append(masks[0])
 
+regex_pattern = r"([^\\]+)$"
+resultString = ""
 # save predictions
 for j in range(len(plot_imgs)):
     fig, ax = plt.subplots()
@@ -112,7 +116,12 @@ for j in range(len(plot_imgs)):
     utils.show_mask(plot_masks[j], ax)
     utils.show_points(plot_points[j], plot_labels[j], ax)
     ax.axis('off')
-    plt.savefig(os.path.join("predictions",
-                             f"prediction_{plot_paths[j].split('/')[-1]}"),
+    match = re.search(regex_pattern, plot_paths[j])
+    if match:
+        resultString = match.group(1)
+
+    print("Image Names: ", resultString)
+    plt.savefig(os.path.join("C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/predictions",
+                             f"prediction_{resultString}"),
                 bbox_inches='tight',
                 pad_inches=0)
