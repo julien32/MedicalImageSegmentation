@@ -19,7 +19,7 @@ parser.add_argument(
     type=str,
     required=True,
     help=
-    "The path to the input dataframe, where all annoated paths and prompts are stored."
+    "The path to the input dataframe, where all annotated paths and prompts are stored."
 )
 
 args = parser.parse_args()

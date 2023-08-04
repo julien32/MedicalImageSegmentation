@@ -93,17 +93,17 @@ def annotation_view(request, picture_id):
 
 
 def submit_annotation(request):
+    script_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh"
     print("in anno post method")
     if request.method == 'POST':
-        data_points_json = request.POST.get('data_points_json')
-        data_points = json.loads(data_points_json)
+        # data_points_json = request.POST.get('data_points_json')
+        # data_points = json.loads(data_points_json)
         dot_positions = request.POST.get('dotPositions')
 
         print('Dot Positions:', dot_positions)
-        print("Data Points: ", data_points)
-        subprocess.call(
-            "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh",
-            shell=True)
+        # print("Data Points: ", data_points)
+
+        subprocess.call("C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh", shell=True)
 
         # onnx_inference.py--onnx-checkpoint "C:\Users\danie\Desktop\Master\Master SoSe 2023\Machine Learning in Graphics, Vision and Language\GithubTeamCode\sam_finetuned.onnx" - -input_df
         # example_user_input.csv
@@ -112,12 +112,12 @@ def submit_annotation(request):
         # Loop through images to get images needed to be rendered
 
         context = {
-            'data_points': data_points,
+            # 'data_points': data_points,
         }
 
         # return HttpResponse('Annotation submitted successfully.')
         print("going to results")
-        return redirect('result', context)
+        return redirect('result')
 
     # Return an error response if the request method is not POST
     return HttpResponse('Invalid request method.')
