@@ -6,8 +6,9 @@ from django.contrib import messages
 import json
 import subprocess
 from django.http import JsonResponse
-
+import pandas as pd
 from .models import Picture
+import math
 
 
 # ToDo: Add specific annotation view
@@ -92,31 +93,67 @@ def annotation_view(request, picture_id):
     return render(request, 'annotation.html', context)
 
 
+def extract_values(data):
+    base_directory = "C:\\Users\\danie\\Desktop\\Master\\Master SoSe 2023\\Machine Learning in Graphics, Vision and Language\\GithubTeamCode\\frontendPrototype\\prototypeSite\\media\\images\\"  # Replace with the actual base directory
+
+    try:
+        parsed_data = json.loads(data)
+        resultExtractedArrayData = []
+
+        for item in parsed_data:
+            current_image_url = item.get("currentImageURL")
+            x = math.ceil(float(item.get("x")))  # Round up to nearest integer
+            y = math.ceil(float(item.get("y")))  # Round up to nearest integer
+
+            url_parts = current_image_url.split("/")
+            image_name = url_parts[-1]
+            image_path = base_directory + image_name
+
+            resultExtractedArrayData.append((image_path, x, y))
+
+        return resultExtractedArrayData
+
+    except json.JSONDecodeError:
+        print("Invalid JSON data")
+
+
 def submit_annotation(request):
     script_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh"
     print("in anno post method")
     if request.method == 'POST':
-        # data_points_json = request.POST.get('data_points_json')
-        # data_points = json.loads(data_points_json)
-        dot_positions = request.POST.get('dotPositions')
+        dotPositions = request.POST.get('dotPositions')
 
-        print('Dot Positions:', dot_positions)
-        # print("Data Points: ", data_points)
+        values = extract_values(dotPositions)
 
-        subprocess.call("C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh", shell=True)
+        csv_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode"
 
-        # onnx_inference.py--onnx-checkpoint "C:\Users\danie\Desktop\Master\Master SoSe 2023\Machine Learning in Graphics, Vision and Language\GithubTeamCode\sam_finetuned.onnx" - -input_df
-        # example_user_input.csv
+        # Create a pandas DataFrame
+        df = pd.DataFrame(values, columns=["filepath", "x", "y"])
+
+        # Save the DataFrame to an Excel file
+        csv_filename = "annotation_image_data.csv"
+        csv_full_path = os.path.join(csv_path, csv_filename)
+
+        df.to_csv(csv_full_path, index=False, mode="w")
+
+        print(f"CSV file '{csv_filename}' created/overwritten successfully at '{csv_full_path}'.")
+
+        print("Extracted values: ", values)
+        for imagePath, x, y in values:
+            print("Image path: ", imagePath)
+            print("X value: ", x)
+            print("Y value: ", y)
+
+        subprocess.call(script_path, shell=True)
 
         # ToDo: save results as array -> mask + image link
+        # ToDo: remove all the print statements and console logs (console.log, print, alert...)
+        # ToDo: test functionality of script and annotation array -> really only images that have been annotated? etc.
         # Loop through images to get images needed to be rendered
-
-        context = {
-            # 'data_points': data_points,
-        }
 
         # return HttpResponse('Annotation submitted successfully.')
         print("going to results")
+
         return redirect('result')
 
     # Return an error response if the request method is not POST

@@ -99,6 +99,8 @@
 
     </style>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <div class="container">
         <h1>Annotate Image</h1>
 
@@ -114,7 +116,7 @@
         <form id="annotation-form" action="/submit" method="post">
             {% csrf_token %}
             <input type="hidden" name="dotPositions" id="dotPositionsInput">
-            <button type="submit">Submit</button>
+            <button id="submission-button" type="submit">Submit</button>
         </form>
 
         <div class="buttons-container">
@@ -165,6 +167,8 @@
 
             const annotationCounter = document.querySelector('#annotatedImageCounter');
             annotationCounter.textContent = dotPositions.length.toString();
+
+            const submissionButton = document.querySelector('#submission-button');
 
             // investigate step where program displays image through position in array
             // can the selected image be mad first image somehow?
@@ -219,6 +223,7 @@
             const handleMouseDown = (event) => {
                 clearSingleAnnotationButton.removeAttribute("disabled");
                 clearAllAnnotationsButton.removeAttribute("disabled");
+                submissionButton.removeAttribute("disabled");
 
                 const canvasRect = canvas.getBoundingClientRect();
                 const offsetX = event.clientX - canvasRect.left;
@@ -237,6 +242,7 @@
                 canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
                 // Update the dot positions input value
                 document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
+                console.log("dotPos: ", dotPositions)
                 annotationCounter.textContent = dotPositions.length.toString();
             };
 
@@ -244,6 +250,7 @@
 
             const clearAllAnnotationsButton = document.querySelector('#clearAllAnnotationsButton');
             clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+            submissionButton.setAttribute("disabled", "disabled");
             clearAllAnnotationsButton.addEventListener('click', () => {
                 if (dotPositions.length > 0) {
 
@@ -261,6 +268,7 @@
                         if (dotPositions.length == 0) {
                             clearAllAnnotationsButton.setAttribute("disabled", "disabled");
                             clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                            submissionButton.setAttribute("disabled", "disabled");
                         }
                     }
 
@@ -270,10 +278,12 @@
 
             const formSubmission = document.querySelector('#annotation-form');
             formSubmission.addEventListener('click', () => {
-                alert("here")
+                console.log("Testing submit excel creation: ", dotPositions);
+                alert("here");
+
                 // ToDo: implement python script here
                 // ToDo: remove if not needed
-                });
+            });
 
             const colorPicker = document.querySelector('#colorPicker');
             colorPicker.addEventListener('change', (event) => {
@@ -299,6 +309,7 @@
                     if (dotPositions.length == 0) {
                         clearSingleAnnotationButton.setAttribute("disabled", "disabled");
                         clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+                        submissionButton.setAttribute("disabled", "disabled");
                     }
 
                     // Remove existing dot elements from the page
@@ -310,8 +321,7 @@
                     // Disable single click clear button if used on single image
                     clearSingleAnnotationButton.setAttribute("disabled", "disabled");
                 }
-            )
-            ;
+            );
 
             const prevImage = document.querySelector('#prevImage');
             const nextImage = document.querySelector('#nextImage');
