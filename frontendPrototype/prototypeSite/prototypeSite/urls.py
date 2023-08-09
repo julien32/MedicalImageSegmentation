@@ -31,7 +31,7 @@ urlpatterns = [
     path('delete/', views.delete_images, name='delete_images'),
     path('delete/confirm/', views.delete_images_confirm, name='delete_images_confirm'),
     path('submit/', views.result, name='result'),
-    path('results/', views.prediction_results, name='prediction_results')
+    path('results/', views.prediction_results, name='prediction_results'),
 ]
 
 if settings.DEBUG:

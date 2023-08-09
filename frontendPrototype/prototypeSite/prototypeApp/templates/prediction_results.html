@@ -2,21 +2,29 @@
 
 {% block content %}
     <div id="main-container">
-        <div id="download-container">
+        <div id="upload-container">
+
             <h1 style="margin-bottom: 1.5rem; text-align: center;">Download Results</h1>
-            <button id="download-results-button">Download Results</button>
+
+            <button id="download-button"
+                    style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
+                Download
+            </button>
+
         </div>
 
-
-    <div class="image-grid" id="imageGrid">
-        <h1 style="margin-bottom: 1.5rem; text-align: center;">Result Gallery</h1>
-        {% for image_file in image_files %}
-            <div class="image-item">
-                <img src="{{ image_file }}" alt="{{ image_file }}">
+        <div id="gallery-container">
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Result Gallery</h1>
+            <div id="image-gallery">
+                {% for image_file in image_files %}
+                    <div class="gallery-item">
+                        <img src="{{ image_file }}" alt="{{ image_file }}">
+                    </div>
+                {% endfor %}
             </div>
-        {% endfor %}
+        </div>
     </div>
-     </div>
+
 
     <style>
 
@@ -83,7 +91,7 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        #delete-button {
+        #download-button {
             background-color: #4CAF50FF;
             color: #fff;
             padding: 10px 20px;
@@ -103,7 +111,7 @@
             margin-bottom: 20px;
         }
 
-        #imageGrid {
+        #image-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
@@ -112,7 +120,7 @@
         }
 
 
-        .image-item {
+        .gallery-item {
             width: 250px;
             padding: 10px;
             box-sizing: border-box;
@@ -123,11 +131,11 @@
             margin-left: 25px;
         }
 
-        .image-item:hover {
+        .gallery-item:hover {
             transform: scale(1.15);
         }
 
-        .image-item img {
+        .gallery-item img {
             display: block;
             width: 100%;
             height: auto;
@@ -159,10 +167,9 @@
             transform: scale(1.1);
         }
 
-        #delete-button:hover {
+        #download-button:hover {
             transform: scale(1.1);
         }
-
 
     </style>
 
@@ -174,7 +181,6 @@
                 button.classList.remove('animated');
             }, 500);
         }
-
 
     </script>
 {% endblock %}
