@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div id="main-container">
+        <div id="download-container">
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Download Results</h1>
+            <button id="download-results-button">Download Results</button>
+        </div>
+
+
+    <div class="image-grid" id="imageGrid">
+        <h1 style="margin-bottom: 1.5rem; text-align: center;">Result Gallery</h1>
+        {% for image_file in image_files %}
+            <div class="image-item">
+                <img src="{{ image_file }}" alt="{{ image_file }}">
+            </div>
+        {% endfor %}
+    </div>
+     </div>
+
+    <style>
+
+        @keyframes buttonAnimation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        #main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: flex-start; /* Align items at the top */
+        }
+
+        #download-container {
+            flex-basis: 40%; /* Adjust the width as needed */
+            margin-right: 20px; /* Add some spacing between the form and gallery */
+            text-align: center;
+            padding-right: 10px; /* Add some padding to separate the content from the border */
+        }
+
+        #download-container h2 {
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-top: 5px;
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+
+        input[type="submit"] {
+            background-color: #4CAF50FF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #delete-button {
+            background-color: #4CAF50FF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #download-container, #gallery-container {
+            flex: 1;
+            padding: 20px;
+        }
+
+        #download-container form {
+            margin-bottom: 20px;
+        }
+
+        #imageGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            justify-items: center;
+            border-left: 2px solid #4CAF50; /* Add vertical border */
+        }
+
+
+        .image-item {
+            width: 250px;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            margin-left: 25px;
+        }
+
+        .image-item:hover {
+            transform: scale(1.15);
+        }
+
+        .image-item img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .image-title {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .text-link {
+            text-decoration: none;
+            color: #666;
+            cursor: pointer;
+        }
+
+        #gallery-container {
+            flex-basis: 60%; /* Adjust the width as needed */
+            text-align: center;
+            position: relative; /* Add position relative */
+        }
+
+        #upload-button:hover {
+            transform: scale(1.1);
+        }
+
+        #delete-button:hover {
+            transform: scale(1.1);
+        }
+
+
+    </style>
+
+    <script>
+
+        function animateButton(button) {
+            button.classList.add('animated');
+            setTimeout(function () {
+                button.classList.remove('animated');
+            }, 500);
+        }
+
+
+    </script>
+{% endblock %}
