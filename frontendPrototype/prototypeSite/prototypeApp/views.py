@@ -147,13 +147,12 @@ def submit_annotation(request):
 
         subprocess.call(script_path, shell=True)
 
-        # ToDo: save results as array -> mask + image link
         # ToDo: remove all the print statements and console logs (console.log, print, alert...)
-        # ToDo: test functionality of script and annotation array -> really only images that have been annotated? etc.
         # ToDo: fix onnx.py not using correct coordinates
         # ToDo: add page to closer inspect prediction result images
         # ToDo: implement download results button
         # ToDo: implement clear results button -> chat GPT last multi-prompt
+        # ToDo: make all paths relative -> onnx file, views, etc...
 
         # Loop through images to get images needed to be rendered
 
