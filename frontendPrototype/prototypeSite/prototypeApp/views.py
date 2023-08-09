@@ -9,6 +9,7 @@ from django.http import JsonResponse
 import pandas as pd
 from .models import Picture
 import math
+from django.conf import settings
 
 
 # ToDo: Add specific annotation view
@@ -118,13 +119,16 @@ def extract_values(data):
 
 
 def submit_annotation(request):
+    # Path to script
     script_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh"
-    print("in anno post method")
+
+    # Gather dot positions of annotated image
     if request.method == 'POST':
         dotPositions = request.POST.get('dotPositions')
 
         values = extract_values(dotPositions)
 
+        # Path to csv file that saves all dot positions and image paths
         csv_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode"
 
         # Create a pandas DataFrame
@@ -149,12 +153,13 @@ def submit_annotation(request):
         # ToDo: save results as array -> mask + image link
         # ToDo: remove all the print statements and console logs (console.log, print, alert...)
         # ToDo: test functionality of script and annotation array -> really only images that have been annotated? etc.
+        # ToDo: fix onnx.py not using correct coordinates
         # Loop through images to get images needed to be rendered
 
         # return HttpResponse('Annotation submitted successfully.')
         print("going to results")
 
-        return redirect('result')
+        return redirect('prediction_results')
 
     # Return an error response if the request method is not POST
     return HttpResponse('Invalid request method.')
@@ -196,3 +201,17 @@ def result(request):
     }
 
     return render(request, 'result.html')
+
+
+def prediction_results(request):
+    print("Going to results")
+    image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)
+    image_files = [os.path.join(settings.PREDICTION_MEDIA_URL, f) for f in os.listdir(image_folder) if
+                   f.endswith(('.jpg', '.png', '.jpeg'))]
+
+    print("All images printed here: ", image_files)
+
+    context = {
+        'image_files': image_files,
+    }
+    return render(request, 'prediction_results.html', context)

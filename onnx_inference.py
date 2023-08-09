@@ -28,8 +28,11 @@ args = parser.parse_args()
 user_input = pd.read_csv(args.input_df)
 
 image_paths = user_input['filepath'].tolist()
+print("Paths: ", image_paths)
 prompts_y = user_input['y'].tolist()
+print("Y coords: ", prompts_y)
 prompts_x = user_input['x'].tolist()
+print("X coords: ", prompts_x)
 
 assert len(prompts_y) == len(prompts_x) == len(
     image_paths)  # make sure there is a prompt for each image (and vice versa)
@@ -121,7 +124,7 @@ for j in range(len(plot_imgs)):
         resultString = match.group(1)
 
     print("Image Names: ", resultString)
-    plt.savefig(os.path.join("C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/predictions",
+    plt.savefig(os.path.join("C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/frontendPrototype/prototypeSite/prediction_media",
                              f"prediction_{resultString}"),
                 bbox_inches='tight',
                 pad_inches=0)
