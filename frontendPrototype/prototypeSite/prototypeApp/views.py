@@ -12,9 +12,6 @@ import math
 from django.conf import settings
 
 
-# ToDo: Add specific annotation view
-# ToDo: Test script functionality
-
 def gallery_view(request):
     if request.method == 'POST':
         images = request.FILES.getlist('images')
@@ -154,6 +151,10 @@ def submit_annotation(request):
         # ToDo: remove all the print statements and console logs (console.log, print, alert...)
         # ToDo: test functionality of script and annotation array -> really only images that have been annotated? etc.
         # ToDo: fix onnx.py not using correct coordinates
+        # ToDo: add page to closer inspect prediction result images
+        # ToDo: implement download results button
+        # ToDo: implement clear results button -> chat GPT last multi-prompt
+
         # Loop through images to get images needed to be rendered
 
         # return HttpResponse('Annotation submitted successfully.')
@@ -167,40 +168,6 @@ def submit_annotation(request):
 
 def base(request):
     return render(request, 'description.html')
-
-
-def result(request):
-    print("arrived in results")
-    dot_positions = request.POST.get('dotPositions')
-    print("result dot positions: ", dot_positions)
-
-    pictures = Picture.objects.all()
-    num_images = pictures.count()
-    allDotPositions = dot_positions
-    imageLinks = []
-
-    current_index = None
-    prev_id = None
-    next_id = None
-
-    if current_index is not None:
-        prev_index = (current_index - 1 + num_images) % num_images
-        next_index = (current_index + 1) % num_images
-
-        prev_id = pictures[prev_index].id
-        next_id = pictures[next_index].id
-
-        return JsonResponse({'success': True})
-
-    context = {
-        'num_images': num_images,
-        'current_image_index': current_index,
-        'prev_picture_id': prev_id,
-        'next_picture_id': next_id,
-        'pictures': pictures,
-    }
-
-    return render(request, 'result.html')
 
 
 def prediction_results(request):

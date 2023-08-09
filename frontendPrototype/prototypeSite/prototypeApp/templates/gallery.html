@@ -121,7 +121,7 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        #delete-button {
+        #download-button {
             background-color: #4CAF50FF;
             color: #fff;
             padding: 10px 20px;
@@ -196,7 +196,7 @@
             transform: scale(1.1);
         } 
         
-        #delete-button:hover{
+        #download-button:hover{
             transform: scale(1.1);
         }
 
@@ -208,7 +208,7 @@
     <script>
      // Enable delete button if at least one image is selected
     const deleteForm = document.getElementById('delete-form');
-    const deleteButton = document.getElementById('delete-button');
+    const deleteButton = document.getElementById('download-button');
     const checkboxes = deleteForm.querySelectorAll('input[type="checkbox"]');
 
     checkboxes.forEach(checkbox => {
