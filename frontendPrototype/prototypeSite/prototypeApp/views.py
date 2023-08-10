@@ -11,6 +11,19 @@ from .models import Picture
 import math
 from django.conf import settings
 
+# Path to folder with input images -> created automatically when uploading images via website -> need to update path for local machine
+input_image_directory = "C:\\Users\\danie\\Desktop\\Master\\Master SoSe 2023\\Machine Learning in Graphics, Vision and Language\\GithubTeamCode\\frontendPrototype\\prototypeSite\\media\\images\\"
+
+# Path to run_inference.sh script on local machine -> find inference.sh file in your local files
+script_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh"
+
+# Update paths in inference.sh
+# ToDo: run inference with passed variables -> stefan
+
+# Path to csv file that saves all dot positions and image paths on local machine
+# Make sure csv Excel file is closed when running inference -> otherwise error will occur
+csv_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode"
+
 
 def gallery_view(request):
     if request.method == 'POST':
@@ -44,7 +57,6 @@ def delete_images_confirm(request):
 
 
 def annotation_view(request, picture_id):
-    print("Going to annotation view")
     picture = get_object_or_404(Picture, id=picture_id)
     pictures = Picture.objects.all()
     num_images = pictures.count()
@@ -87,13 +99,10 @@ def annotation_view(request, picture_id):
         'data_points_json': json.dumps(data_points),  # Convert data_points to a JSON string
     }
 
-    print("arrived in annotation view")
     return render(request, 'annotation.html', context)
 
 
 def extract_values(data):
-    base_directory = "C:\\Users\\danie\\Desktop\\Master\\Master SoSe 2023\\Machine Learning in Graphics, Vision and Language\\GithubTeamCode\\frontendPrototype\\prototypeSite\\media\\images\\"  # Replace with the actual base directory
-
     try:
         parsed_data = json.loads(data)
         resultExtractedArrayData = []
@@ -105,7 +114,7 @@ def extract_values(data):
 
             url_parts = current_image_url.split("/")
             image_name = url_parts[-1]
-            image_path = base_directory + image_name
+            image_path = input_image_directory + image_name
 
             resultExtractedArrayData.append((image_path, x, y))
 
@@ -116,17 +125,11 @@ def extract_values(data):
 
 
 def submit_annotation(request):
-    # Path to script
-    script_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh"
-
     # Gather dot positions of annotated image
     if request.method == 'POST':
         dotPositions = request.POST.get('dotPositions')
 
         values = extract_values(dotPositions)
-
-        # Path to csv file that saves all dot positions and image paths
-        csv_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode"
 
         # Create a pandas DataFrame
         df = pd.DataFrame(values, columns=["filepath", "x", "y"])
@@ -139,7 +142,6 @@ def submit_annotation(request):
 
         print(f"CSV file '{csv_filename}' created/overwritten successfully at '{csv_full_path}'.")
 
-        print("Extracted values: ", values)
         for imagePath, x, y in values:
             print("Image path: ", imagePath)
             print("X value: ", x)
@@ -153,11 +155,12 @@ def submit_annotation(request):
         # ToDo: implement download results button
         # ToDo: implement clear results button -> chat GPT last multi-prompt
         # ToDo: make all paths relative -> onnx file, views, etc...
+        # ToDo: implement arrow keys on results page to look at all results
+        # ToDo: remove bash script shell popup
+        # ToDo: relativize all paths
 
-        # Loop through images to get images needed to be rendered
-
-        # return HttpResponse('Annotation submitted successfully.')
-        print("going to results")
+        # ToDo: clean up gallery and results page using CSS -> Luca
+        # ToDo: create new branch for css dev. Gallery_results_css
 
         return redirect('prediction_results')
 
@@ -170,14 +173,28 @@ def base(request):
 
 
 def prediction_results(request):
-    print("Going to results")
-    image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)
-    image_files = [os.path.join(settings.PREDICTION_MEDIA_URL, f) for f in os.listdir(image_folder) if
+    prediction_image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)
+    image_files = [os.path.join(settings.PREDICTION_MEDIA_URL, f) for f in os.listdir(prediction_image_folder) if
                    f.endswith(('.jpg', '.png', '.jpeg'))]
 
-    print("All images printed here: ", image_files)
+    print("Image files: ", image_files)
 
     context = {
         'image_files': image_files,
+        'image_location': prediction_image_folder,
+
     }
     return render(request, 'prediction_results.html', context)
+
+
+def delete_images(request):
+    image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)  # Use the second media root
+
+    # Delete all image files in the folder
+    for filename in os.listdir(image_folder):
+        if filename.lower().endswith(('.jpg', '.png', '.jpeg')):
+            file_path = os.path.join(image_folder, filename)
+            os.remove(file_path)
+
+    # Redirect to another page after deleting images
+    return redirect('gallery')

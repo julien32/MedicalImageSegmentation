@@ -10,6 +10,11 @@ import matplotlib.pyplot as plt
 import utils
 import re
 
+checkpoint = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/sam_vit_b_01ec64.pth"
+
+# Location of predictions on local machine
+prediction_location = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/frontendPrototype/prototypeSite/prediction_media"
+
 parser = argparse.ArgumentParser("Run onnxruntime inference sess")
 parser.add_argument("--onnx-checkpoint",
                     type=str,
@@ -41,7 +46,6 @@ assert len(prompts_y) == len(prompts_x) == len(
 ort_session = onnxruntime.InferenceSession(args.onnx_checkpoint)
 
 # load model
-checkpoint = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/sam_vit_b_01ec64.pth"
 model_type = "vit_b"
 sam = sam_model_registry[model_type](checkpoint=checkpoint)
 sam.to(device='cpu')
@@ -49,6 +53,7 @@ predictor = SamPredictor(sam)
 
 plot_imgs = []
 plot_masks = []
+plot_masks_raw = []
 plot_points = []
 plot_labels = []
 plot_paths = []
@@ -66,9 +71,9 @@ for i, img_path in enumerate(image_paths):
 
     # process input for SAM
     input_image_torch, input_size, original_image_size = \
-                    utils.prepare_sam_inputs_for_inference(
-                                            image,
-                                            )
+        utils.prepare_sam_inputs_for_inference(
+            image,
+        )
     image = sam.preprocess(input_image_torch)
 
     # get prompt coords
@@ -105,6 +110,11 @@ for i, img_path in enumerate(image_paths):
 
     # run inference
     masks, _, low_res_logits = ort_session.run(None, ort_inputs)
+    normalized_masks = (masks - masks.min()) / (masks.max() - masks.min())
+    normalized_masks *= 255
+    normalized_masks = normalized_masks.astype(np.uint8)
+    # Convert to numpy and save
+    plot_masks_raw.append(normalized_masks[0][0])
     masks = masks > predictor.model.mask_threshold
 
     # store predicted mask to be shown later
@@ -112,6 +122,7 @@ for i, img_path in enumerate(image_paths):
 
 regex_pattern = r"([^\\]+)$"
 resultString = ""
+maskString = ""
 # save predictions
 for j in range(len(plot_imgs)):
     fig, ax = plt.subplots()
@@ -124,7 +135,24 @@ for j in range(len(plot_imgs)):
         resultString = match.group(1)
 
     print("Image Names: ", resultString)
-    plt.savefig(os.path.join("C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/frontendPrototype/prototypeSite/prediction_media",
-                             f"prediction_{resultString}"),
+    plt.savefig(os.path.join(
+        prediction_location,
+        f"prediction_{resultString}"),
+        bbox_inches='tight',
+        pad_inches=0)
+
+# save masks
+for j in range(len(plot_masks_raw)):
+    fig, ax = plt.subplots()
+    ax.imshow(plot_masks_raw[j])
+    ax.axis('off')
+    match = re.search(regex_pattern, plot_paths[j])
+    if match:
+        maskString = match.group(1)
+        print("Mask Names: ", maskString)
+
+    plt.savefig(os.path.join(
+        prediction_location,
+        f"mask_{maskString}"),
                 bbox_inches='tight',
                 pad_inches=0)
