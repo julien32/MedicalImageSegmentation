@@ -19,7 +19,7 @@
             <h1 style="margin-bottom: 1.5rem; text-align: center;">Result Gallery</h1>
             <div id="image-gallery">
                 {% for image_file in image_files %}
-                    <div class="gallery-item">
+                    <div class="gallery-item {% if image_file|slice:'0:5' == 'mask_' or image_file|slice:'0:11' == 'prediction_' %}hidden{% endif %}">
                         <img src="{{ image_file }}" alt="{{ image_file }}">
                     </div>
                 {% endfor %}
@@ -173,6 +173,10 @@
             border-radius: 5px;
         }
 
+        .gallery-item.hidden {
+            display: none;
+        }
+
         .image-title {
             margin-top: 5px;
             font-size: 14px;
@@ -239,8 +243,9 @@
 
                 if ((showMaskImages && isMaskImage) || (showPredictionImages && isPredictionImage)) {
                     image.style.display = 'block';
+                    image.parentNode.style.display = 'block';
                 } else {
-                    image.style.display = 'none';
+                    image.parentNode.style.display = 'none';
                 }
             });
         }
