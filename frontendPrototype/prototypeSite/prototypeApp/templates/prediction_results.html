@@ -4,12 +4,14 @@
     <div id="main-container">
         <div id="upload-container">
 
-            <h1 style="margin-bottom: 1.5rem; text-align: center;">Download Results</h1>
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Clear Results</h1>
 
-            <button id="download-button"
-                    style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
-                Download
-            </button>
+            <form action="{% url 'delete_images' %}" method="post">
+                {% csrf_token %}
+                <button id="clear-button" type="submit"
+                        onclick="return confirm('Are you sure you want to clear all results?')">Clear Results
+                </button>
+            </form>
 
         </div>
 
@@ -22,6 +24,17 @@
                     </div>
                 {% endfor %}
             </div>
+        </div>
+
+        <div>
+            <label>Show masks:</label>
+            <input type="checkbox" id="showMaskImages" checked>
+            <label>Show predictions:</label>
+            <input type="checkbox" id="showPredictionImages" checked>
+        </div>
+
+        <div class="container">
+            <p class="image-note">Note: The images are located at {{ image_location }}.</p>
         </div>
     </div>
 
@@ -38,6 +51,24 @@
             100% {
                 transform: scale(1);
             }
+        }
+
+        /* Style for the container */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        /* Style for the note */
+        .image-note {
+            text-align: center; /* Center the text horizontally */
+            color: #888; /* Light grey color */
+            font-size: 14px; /* Adjust the font size as needed */
+            margin-top: 20px; /* Add spacing from the content */
+            padding-left: 10px;
+            padding-right: 10px;
         }
 
         #main-container {
@@ -91,7 +122,7 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        #download-button {
+        #clear-button {
             background-color: #4CAF50FF;
             color: #fff;
             padding: 10px 20px;
@@ -167,7 +198,7 @@
             transform: scale(1.1);
         }
 
-        #download-button:hover {
+        #clear-button:hover {
             transform: scale(1.1);
         }
 
@@ -182,5 +213,39 @@
             }, 500);
         }
 
+        // Get the toggle elements
+        const showMaskImagesToggle = document.getElementById('showMaskImages');
+        const showPredictionImagesToggle = document.getElementById('showPredictionImages');
+
+        // Add event listeners to the toggles
+        showMaskImagesToggle.addEventListener('change', updateImageVisibility);
+        showPredictionImagesToggle.addEventListener('change', updateImageVisibility);
+
+        // Function to update image visibility based on selected toggles
+        function updateImageVisibility() {
+            const showMaskImages = showMaskImagesToggle.checked;
+            console.log(showMaskImagesToggle.checked)
+            const showPredictionImages = showPredictionImagesToggle.checked;
+            console.log(showPredictionImagesToggle.checked)
+
+            const images = document.querySelectorAll('.gallery-item img');
+            // const item_div = document.getElementById('gallery-item');
+
+            images.forEach(image => {
+                const imageName = image.getAttribute('alt');
+                console.log("Image name: ", imageName);
+                const isMaskImage = imageName.startsWith('/prediction_media/mask_');
+                const isPredictionImage = imageName.startsWith('/prediction_media/prediction_');
+
+                if ((showMaskImages && isMaskImage) || (showPredictionImages && isPredictionImage)) {
+                    image.style.display = 'block';
+                } else {
+                    image.style.display = 'none';
+                }
+            });
+        }
+
+        // Initial call to set image visibility
+        updateImageVisibility();
     </script>
 {% endblock %}

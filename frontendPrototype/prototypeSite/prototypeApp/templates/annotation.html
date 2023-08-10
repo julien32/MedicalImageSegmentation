@@ -134,14 +134,6 @@
 
     <script>
 
-        // ToDo: pass on information of pictures and annotated data only
-        // ToDo: remove text box?
-        // ToDo: Check that warning does not happen on clicking submit button
-        // ToDo: confirmation button for finishing annotation and starting segmentation
-        // ToDo: give user recap of status before sending info to be segmented
-        // ToDo: implement arrow keys on results page to look at all results
-
-
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.querySelector('#canvas');
             const ctx = canvas.getContext('2d');
@@ -242,7 +234,6 @@
                 canvas.removeEventListener('mousedown', handleMouseDown); // Remove the event listener
                 // Update the dot positions input value
                 document.querySelector('#dotPositionsInput').value = JSON.stringify(dotPositions);
-                console.log("dotPos: ", dotPositions)
                 annotationCounter.textContent = dotPositions.length.toString();
             };
 
@@ -279,10 +270,7 @@
             const formSubmission = document.querySelector('#annotation-form');
             formSubmission.addEventListener('click', () => {
                 console.log("Testing submit excel creation: ", dotPositions);
-                alert("here");
 
-                // ToDo: implement python script here
-                // ToDo: remove if not needed
             });
 
             const colorPicker = document.querySelector('#colorPicker');
@@ -384,10 +372,6 @@
 
             window.onbeforeunload = dontLeave;
         });
-
-        // ToDo: move script into web file directory
-        // ToDo: try php access
-        // ToDo: try letting it run over JS
 
 
     </script>
