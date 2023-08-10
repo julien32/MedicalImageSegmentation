@@ -179,6 +179,7 @@ def prediction_results(request):
 
     print("Image files: ", image_files)
 
+
     context = {
         'image_files': image_files,
         'image_location': prediction_image_folder,
