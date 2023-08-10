@@ -2,7 +2,6 @@ import os
 
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
 import json
 import subprocess
 from django.http import JsonResponse
@@ -10,6 +9,7 @@ import pandas as pd
 from .models import Picture
 import math
 from django.conf import settings
+from django.http import Http404
 
 # Path to folder with input images -> created automatically when uploading images via website -> need to update path for local machine
 input_image_directory = "C:\\Users\\danie\\Desktop\\Master\\Master SoSe 2023\\Machine Learning in Graphics, Vision and Language\\GithubTeamCode\\frontendPrototype\\prototypeSite\\media\\images\\"
@@ -149,17 +149,16 @@ def submit_annotation(request):
 
         subprocess.call(script_path, shell=True)
 
+        # ToDo: Daniel
         # ToDo: remove all the print statements and console logs (console.log, print, alert...)
         # ToDo: fix onnx.py not using correct coordinates
         # ToDo: add page to closer inspect prediction result images
-        # ToDo: implement download results button
-        # ToDo: implement clear results button -> chat GPT last multi-prompt
         # ToDo: make all paths relative -> onnx file, views, etc...
         # ToDo: implement arrow keys on results page to look at all results
         # ToDo: remove bash script shell popup
-        # ToDo: relativize all paths
 
-        # ToDo: clean up gallery and results page using CSS -> Luca
+        # ToDo: Luca
+        # ToDo: clean up gallery and results page using CSS
         # ToDo: create new branch for css dev. Gallery_results_css
 
         return redirect('prediction_results')
@@ -173,15 +172,23 @@ def base(request):
 
 
 def prediction_results(request):
+    image_data = []
     prediction_image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)
     image_files = [os.path.join(settings.PREDICTION_MEDIA_URL, f) for f in os.listdir(prediction_image_folder) if
                    f.endswith(('.jpg', '.png', '.jpeg'))]
 
     print("Image files: ", image_files)
+    print("Prediction image files: ", prediction_image_folder)
+
+    for image_file in image_files:
+        image_path = os.path.join(settings.PREDICTION_MEDIA_URL, image_file)
+        image_basename = os.path.basename(image_file)
+        image_data.append({'image_path': image_path, 'image_basename': image_basename})
 
     context = {
         'image_files': image_files,
         'image_location': prediction_image_folder,
+        'image_data': image_data,
 
     }
     return render(request, 'prediction_results.html', context)
@@ -198,3 +205,12 @@ def delete_images(request):
 
     # Redirect to another page after deleting images
     return redirect('gallery')
+
+
+def image_detail(request, image_name):
+    image_path = os.path.join(settings.PREDICTION_MEDIA_ROOT, image_name)
+
+    if os.path.exists(image_path):
+        return render(request, 'image_detail.html', {'image_path': image_path})
+    else:
+        raise Http404('Image not found')
