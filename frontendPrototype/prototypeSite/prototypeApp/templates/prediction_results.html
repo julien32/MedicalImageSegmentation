@@ -19,8 +19,10 @@
             <h1 style="margin-bottom: 1.5rem; text-align: center;">Result Gallery</h1>
             <div id="image-gallery">
                 {% for image_file in image_files %}
-                    <div class="gallery-item {% if 'mask_' in image_file or 'prediction' in image_file %}hidden{% endif %}">
-                        <img src="{{ image_file }}" alt="{{ image_file }}">
+                    <div class="gallery-item {% if 'mask_' in image_file or 'prediction_' in image_file %}hidden{% endif %}">
+                        <a href="{% url 'image_detail' image_name=data.image_basename %}">
+                            <img src="{{ data.image_path }}" alt="{{ data.image_basename }}">
+                        </a>
                     </div>
                 {% endfor %}
             </div>
