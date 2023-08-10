@@ -19,7 +19,7 @@
             <h1 style="margin-bottom: 1.5rem; text-align: center;">Result Gallery</h1>
             <div id="image-gallery">
                 {% for image_file in image_files %}
-                    <div class="gallery-item {% if image_file|slice:'0:5' == 'mask_' or image_file|slice:'0:11' == 'prediction_' %}hidden{% endif %}">
+                    <div class="gallery-item {% if 'mask_' in image_file or 'prediction' in image_file %}hidden{% endif %}">
                         <img src="{{ image_file }}" alt="{{ image_file }}">
                     </div>
                 {% endfor %}
