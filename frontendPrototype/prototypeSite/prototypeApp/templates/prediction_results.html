@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div id="main-container">
+        <div id="upload-container">
+
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Clear Results</h1>
+
+            <form action="{% url 'delete_images' %}" method="post">
+                {% csrf_token %}
+                <button id="clear-button" type="submit"
+                        onclick="return confirm('Are you sure you want to clear all results?')">Clear Results
+                </button>
+            </form>
+
+        </div>
+
+        <div id="gallery-container">
+            <h1 style="margin-bottom: 1.5rem; text-align: center;">Result Gallery</h1>
+            <div id="image-gallery">
+                {% for image_file in image_files %}
+                    <div class="gallery-item {% if 'mask_' in image_file or 'prediction_' in image_file %}hidden{% endif %}">
+                        <a href="{% url 'image_detail' image_name=data.image_basename %}">
+                            <img src="{{ data.image_path }}" alt="{{ data.image_basename }}">
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div>
+            <label>Show masks:</label>
+            <input type="checkbox" id="showMaskImages" checked>
+            <label>Show predictions:</label>
+            <input type="checkbox" id="showPredictionImages" checked>
+        </div>
+
+        <div class="container">
+            <p class="image-note">Note: The images are located at {{ image_location }}.</p>
+        </div>
+    </div>
+
+
+    <style>
+
+        @keyframes buttonAnimation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Style for the container */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        /* Style for the note */
+        .image-note {
+            text-align: center; /* Center the text horizontally */
+            color: #888; /* Light grey color */
+            font-size: 14px; /* Adjust the font size as needed */
+            margin-top: 20px; /* Add spacing from the content */
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        #main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: flex-start; /* Align items at the top */
+        }
+
+        #download-container {
+            flex-basis: 40%; /* Adjust the width as needed */
+            margin-right: 20px; /* Add some spacing between the form and gallery */
+            text-align: center;
+            padding-right: 10px; /* Add some padding to separate the content from the border */
+        }
+
+        #download-container h2 {
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-top: 5px;
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+
+        input[type="submit"] {
+            background-color: #4CAF50FF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #clear-button {
+            background-color: #4CAF50FF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #download-container, #gallery-container {
+            flex: 1;
+            padding: 20px;
+        }
+
+        #download-container form {
+            margin-bottom: 20px;
+        }
+
+        #image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            justify-items: center;
+            border-left: 2px solid #4CAF50; /* Add vertical border */
+        }
+
+
+        .gallery-item {
+            width: 250px;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            margin-left: 25px;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.15);
+        }
+
+        .gallery-item img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .gallery-item.hidden {
+            display: none;
+        }
+
+        .image-title {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .text-link {
+            text-decoration: none;
+            color: #666;
+            cursor: pointer;
+        }
+
+        #gallery-container {
+            flex-basis: 60%; /* Adjust the width as needed */
+            text-align: center;
+            position: relative; /* Add position relative */
+        }
+
+        #upload-button:hover {
+            transform: scale(1.1);
+        }
+
+        #clear-button:hover {
+            transform: scale(1.1);
+        }
+
+    </style>
+
+    <script>
+
+        function animateButton(button) {
+            button.classList.add('animated');
+            setTimeout(function () {
+                button.classList.remove('animated');
+            }, 500);
+        }
+
+        // Get the toggle elements
+        const showMaskImagesToggle = document.getElementById('showMaskImages');
+        const showPredictionImagesToggle = document.getElementById('showPredictionImages');
+
+        // Add event listeners to the toggles
+        showMaskImagesToggle.addEventListener('change', updateImageVisibility);
+        showPredictionImagesToggle.addEventListener('change', updateImageVisibility);
+
+        // Function to update image visibility based on selected toggles
+        function updateImageVisibility() {
+            const showMaskImages = showMaskImagesToggle.checked;
+            console.log(showMaskImagesToggle.checked)
+            const showPredictionImages = showPredictionImagesToggle.checked;
+            console.log(showPredictionImagesToggle.checked)
+
+            const images = document.querySelectorAll('.gallery-item img');
+            // const item_div = document.getElementById('gallery-item');
+
+            images.forEach(image => {
+                const imageName = image.getAttribute('alt');
+                console.log("Image name: ", imageName);
+                const isMaskImage = imageName.startsWith('/prediction_media/mask_');
+                const isPredictionImage = imageName.startsWith('/prediction_media/prediction_');
+
+                if ((showMaskImages && isMaskImage) || (showPredictionImages && isPredictionImage)) {
+                    image.style.display = 'block';
+                    image.parentNode.style.display = 'block';
+                } else {
+                    image.parentNode.style.display = 'none';
+                }
+            });
+        }
+
+        // Initial call to set image visibility
+        updateImageVisibility();
+    </script>
+{% endblock %}

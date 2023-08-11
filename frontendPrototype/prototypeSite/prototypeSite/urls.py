@@ -30,8 +30,11 @@ urlpatterns = [
     path('', views.base, name='base'),
     path('delete/', views.delete_images, name='delete_images'),
     path('delete/confirm/', views.delete_images_confirm, name='delete_images_confirm'),
-    path('result/', views.result, name='result'),
+    path('results/', views.prediction_results, name='prediction_results'),
+    path('delete_images/', views.delete_images, name='delete_images'),
+    path('image_detail/<str:image_name>/', views.image_detail, name='image_detail'),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.PREDICTION_MEDIA_URL, document_root=settings.PREDICTION_MEDIA_ROOT)
