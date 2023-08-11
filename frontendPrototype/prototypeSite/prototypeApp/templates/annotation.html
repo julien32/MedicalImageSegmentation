@@ -99,6 +99,8 @@
 
     </style>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <div class="container">
         <h1>Annotate Image</h1>
 
@@ -111,12 +113,10 @@
         </div>
         <!-- When you click the submit button a python file gets triggered and then inference is run on the submitted picture -->
         <!-- change path to the local one in you file system -->
-        <form action="C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_bash.py"
-              id="annotation-form" method="post">
+        <form id="annotation-form" action="/submit" method="post">
             {% csrf_token %}
             <input type="hidden" name="dotPositions" id="dotPositionsInput">
-            <textarea name="userText" id="userTextInput" placeholder="Enter your text"></textarea>
-            <button type="submit">Submit</button>
+            <button id="submission-button" type="submit">Submit</button>
         </form>
 
         <div class="buttons-container">
@@ -133,13 +133,6 @@
     </div>
 
     <script>
-
-        // ToDo: pass on information of pictures and annotated data only
-        // ToDo: remove text box?
-        // ToDo: Check that warning does not happen on clicking submit button
-        // ToDo: confirmation button for finishing annotation and starting segmentation
-        // ToDo: give user recap of status before sending info to be segmented
-
 
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.querySelector('#canvas');
@@ -166,6 +159,8 @@
 
             const annotationCounter = document.querySelector('#annotatedImageCounter');
             annotationCounter.textContent = dotPositions.length.toString();
+
+            const submissionButton = document.querySelector('#submission-button');
 
             // investigate step where program displays image through position in array
             // can the selected image be mad first image somehow?
@@ -220,6 +215,7 @@
             const handleMouseDown = (event) => {
                 clearSingleAnnotationButton.removeAttribute("disabled");
                 clearAllAnnotationsButton.removeAttribute("disabled");
+                submissionButton.removeAttribute("disabled");
 
                 const canvasRect = canvas.getBoundingClientRect();
                 const offsetX = event.clientX - canvasRect.left;
@@ -245,6 +241,7 @@
 
             const clearAllAnnotationsButton = document.querySelector('#clearAllAnnotationsButton');
             clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+            submissionButton.setAttribute("disabled", "disabled");
             clearAllAnnotationsButton.addEventListener('click', () => {
                 if (dotPositions.length > 0) {
 
@@ -262,10 +259,17 @@
                         if (dotPositions.length == 0) {
                             clearAllAnnotationsButton.setAttribute("disabled", "disabled");
                             clearSingleAnnotationButton.setAttribute("disabled", "disabled");
+                            submissionButton.setAttribute("disabled", "disabled");
                         }
                     }
 
                 }
+
+            });
+
+            const formSubmission = document.querySelector('#annotation-form');
+            formSubmission.addEventListener('click', () => {
+                console.log("Testing submit excel creation: ", dotPositions);
 
             });
 
@@ -293,6 +297,7 @@
                     if (dotPositions.length == 0) {
                         clearSingleAnnotationButton.setAttribute("disabled", "disabled");
                         clearAllAnnotationsButton.setAttribute("disabled", "disabled");
+                        submissionButton.setAttribute("disabled", "disabled");
                     }
 
                     // Remove existing dot elements from the page
@@ -304,8 +309,7 @@
                     // Disable single click clear button if used on single image
                     clearSingleAnnotationButton.setAttribute("disabled", "disabled");
                 }
-            )
-            ;
+            );
 
             const prevImage = document.querySelector('#prevImage');
             const nextImage = document.querySelector('#nextImage');
@@ -368,11 +372,6 @@
 
             window.onbeforeunload = dontLeave;
         });
-
-        // ToDo: move script into web file directory
-        // ToDo: try php access
-        // ToDo: try letting it run over JS
-        // ToDo: merge with main
 
 
     </script>

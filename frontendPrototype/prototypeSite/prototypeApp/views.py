@@ -2,15 +2,28 @@ import os
 
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
 import json
+import subprocess
 from django.http import JsonResponse
-
+import pandas as pd
 from .models import Picture
+import math
+from django.conf import settings
+from django.http import Http404
 
+# Path to folder with input images -> created automatically when uploading images via website -> need to update path for local machine
+input_image_directory = "C:\\Users\\danie\\Desktop\\Master\\Master SoSe 2023\\Machine Learning in Graphics, Vision and Language\\GithubTeamCode\\frontendPrototype\\prototypeSite\\media\\images\\"
 
-# ToDo: Add specific annotation view
-# ToDo: Test script functionality
+# Path to run_inference.sh script on local machine -> find inference.sh file in your local files
+script_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh"
+
+# Update paths in inference.sh
+# ToDo: run inference with passed variables -> stefan
+
+# Path to csv file that saves all dot positions and image paths on local machine
+# Make sure csv Excel file is closed when running inference -> otherwise error will occur
+csv_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode"
+
 
 def gallery_view(request):
     if request.method == 'POST':
@@ -73,6 +86,9 @@ def annotation_view(request, picture_id):
 
         return JsonResponse({'success': True})
 
+    # Collect the array list of data points with image ID, X, and Y coordinates
+    data_points = [{'id': pic.id, 'x': pic.x_coordinate, 'y': pic.y_coordinate} for pic in pictures]
+
     context = {
         'picture': picture,
         'num_images': num_images,
@@ -80,20 +96,72 @@ def annotation_view(request, picture_id):
         'prev_picture_id': prev_id,
         'next_picture_id': next_id,
         'pictures': pictures,
+        'data_points_json': json.dumps(data_points),  # Convert data_points to a JSON string
     }
 
     return render(request, 'annotation.html', context)
 
 
+def extract_values(data):
+    try:
+        parsed_data = json.loads(data)
+        resultExtractedArrayData = []
+
+        for item in parsed_data:
+            current_image_url = item.get("currentImageURL")
+            x = math.ceil(float(item.get("x")))  # Round up to nearest integer
+            y = math.ceil(float(item.get("y")))  # Round up to nearest integer
+
+            url_parts = current_image_url.split("/")
+            image_name = url_parts[-1]
+            image_path = input_image_directory + image_name
+
+            resultExtractedArrayData.append((image_path, x, y))
+
+        return resultExtractedArrayData
+
+    except json.JSONDecodeError:
+        print("Invalid JSON data")
+
+
 def submit_annotation(request):
+    # Gather dot positions of annotated image
     if request.method == 'POST':
-        dot_positions = request.POST.get('dotPositions')
-        user_text = request.POST.get('userText')
+        dotPositions = request.POST.get('dotPositions')
 
-        print('Dot Positions:', dot_positions)
-        print('User Text:', user_text)
+        values = extract_values(dotPositions)
 
-        return HttpResponse('Annotation submitted successfully.')
+        # Create a pandas DataFrame
+        df = pd.DataFrame(values, columns=["filepath", "x", "y"])
+
+        # Save the DataFrame to an Excel file
+        csv_filename = "annotation_image_data.csv"
+        csv_full_path = os.path.join(csv_path, csv_filename)
+
+        df.to_csv(csv_full_path, index=False, mode="w")
+
+        print(f"CSV file '{csv_filename}' created/overwritten successfully at '{csv_full_path}'.")
+
+        for imagePath, x, y in values:
+            print("Image path: ", imagePath)
+            print("X value: ", x)
+            print("Y value: ", y)
+
+        subprocess.call(script_path, shell=True)
+
+        # ToDo: Daniel
+        # ToDo: remove all the print statements and console logs (console.log, print, alert...)
+        # ToDo: fix onnx.py not using correct coordinates
+        # ToDo: add page to closer inspect prediction result images
+        # ToDo: make all paths relative -> onnx file, views, etc...
+        # ToDo: implement arrow keys on results page to look at all results
+        # ToDo: remove bash script shell popup
+
+        # ToDo: Luca
+        # ToDo: clean up gallery and results page using CSS
+        # ToDo: create new branch for css dev. Gallery_results_css
+
+        return redirect('prediction_results')
 
     # Return an error response if the request method is not POST
     return HttpResponse('Invalid request method.')
@@ -103,5 +171,46 @@ def base(request):
     return render(request, 'description.html')
 
 
-def result(request):
-    return render(request, 'result.html')
+def prediction_results(request):
+    image_data = []
+    prediction_image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)
+    image_files = [os.path.join(settings.PREDICTION_MEDIA_URL, f) for f in os.listdir(prediction_image_folder) if
+                   f.endswith(('.jpg', '.png', '.jpeg'))]
+
+    print("Image files: ", image_files)
+    print("Prediction image files: ", prediction_image_folder)
+
+    for image_file in image_files:
+        image_path = os.path.join(settings.PREDICTION_MEDIA_URL, image_file)
+        image_basename = os.path.basename(image_file)
+        image_data.append({'image_path': image_path, 'image_basename': image_basename})
+
+    context = {
+        'image_files': image_files,
+        'image_location': prediction_image_folder,
+        'image_data': image_data,
+
+    }
+    return render(request, 'prediction_results.html', context)
+
+
+def delete_images(request):
+    image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)  # Use the second media root
+
+    # Delete all image files in the folder
+    for filename in os.listdir(image_folder):
+        if filename.lower().endswith(('.jpg', '.png', '.jpeg')):
+            file_path = os.path.join(image_folder, filename)
+            os.remove(file_path)
+
+    # Redirect to another page after deleting images
+    return redirect('gallery')
+
+
+def image_detail(request, image_name):
+    image_path = os.path.join(settings.PREDICTION_MEDIA_ROOT, image_name)
+
+    if os.path.exists(image_path):
+        return render(request, 'image_detail.html', {'image_path': image_path})
+    else:
+        raise Http404('Image not found')

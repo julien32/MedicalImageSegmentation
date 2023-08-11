@@ -77,14 +77,14 @@
             align-items: flex-start; /* Align items at the top */
         }
 
-        #upload-container {
+        #download-container {
             flex-basis: 40%; /* Adjust the width as needed */
             margin-right: 20px; /* Add some spacing between the form and gallery */
             text-align: center;
             padding-right: 10px; /* Add some padding to separate the content from the border */
         }
 
-        #upload-container h2 {
+        #download-container h2 {
             margin-bottom: 10px;
         }
 
@@ -121,7 +121,7 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        #delete-button {
+        #clear-button {
             background-color: #4CAF50FF;
             color: #fff;
             padding: 10px 20px;
@@ -132,12 +132,12 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        #upload-container, #gallery-container {
+        #download-container, #gallery-container {
             flex: 1;
             padding: 20px;
         }
 
-        #upload-container form {
+        #download-container form {
             margin-bottom: 20px;
         }
 
@@ -194,9 +194,9 @@
 
         #upload-button:hover{
             transform: scale(1.1);
-        } 
-        
-        #delete-button:hover{
+        }
+
+        #clear-button:hover{
             transform: scale(1.1);
         }
 
@@ -208,7 +208,7 @@
     <script>
      // Enable delete button if at least one image is selected
     const deleteForm = document.getElementById('delete-form');
-    const deleteButton = document.getElementById('delete-button');
+    const deleteButton = document.getElementById('clear-button');
     const checkboxes = deleteForm.querySelectorAll('input[type="checkbox"]');
 
     checkboxes.forEach(checkbox => {
