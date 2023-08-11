@@ -24,6 +24,8 @@
                             <img src="{{ data.image_path }}" alt="{{ data.image_basename }}">
                         </a>
                     </div>
+                    {% empty %}
+                        <p>No images found in the results.</p>
                 {% endfor %}
             </div>
         </div>

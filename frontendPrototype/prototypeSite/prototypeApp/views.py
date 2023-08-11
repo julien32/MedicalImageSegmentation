@@ -33,6 +33,7 @@ def gallery_view(request):
         return redirect('gallery')
 
     pictures = Picture.objects.all()
+    print("PAth", os.path)
     return render(request, 'gallery.html', {'pictures': pictures})
 
 
@@ -49,6 +50,7 @@ def delete_images_confirm(request):
         for image_id in selected_images:
             picture = Picture.objects.get(id=image_id)
             # Delete the image file from the image folder
+            print(os.path)
             if os.path.exists(picture.image.path):
                 os.remove(picture.image.path)
             # Delete the Picture object from the database

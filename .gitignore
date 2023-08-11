@@ -7,6 +7,7 @@ segment_anything/__pycache__/*
 segment_anything/modeling/__pycache__/*
 segment_anything/utils/__pycache__/*
 *.png
+*.jpg
 predictions/*.jpg
 sam_finetuned.onnx
 sam_vit_b_01ec64.pth

@@ -8,7 +8,8 @@
                 {% csrf_token %}
                 <div class="form-group">
 
-                    <input type="file" name="images" accept="image/*" multiple required style="margin-bottom: 1rem; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
+                    <input type="file" name="images" accept="image/*" multiple required
+                           style="margin-bottom: 1rem; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
                     <br>
                     <input type="submit" id="upload-button" value="Upload" onclick="animateButton(this);"
                            style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
@@ -17,8 +18,10 @@
 
             <h1 style="margin-bottom: 1.5rem; text-align: center;">Delete Images</h1>
 
-                <button id="delete-button" type="submit" form="delete-form" style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
-                Delete Selected Images</button>
+            <button id="delete-button" type="submit" form="delete-form"
+                    style="display: inline-block; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
+                Delete Selected Images
+            </button>
 
         </div>
 
@@ -30,7 +33,7 @@
                     {% for picture in pictures %}
                         <div class="gallery-item">
                             <a href="{% url 'annotation' picture.id %}">
-                                <img src="{{ picture.image.url }}" alt="Image" >
+                                <img src="{{ picture.image.url }}" alt="Image">
                             </a>
                             <div class="image-title">
                                 <a href="{% url 'annotation' picture.id %}" class="text-link">
@@ -77,14 +80,14 @@
             align-items: flex-start; /* Align items at the top */
         }
 
-        #download-container {
+        #upload-container {
             flex-basis: 40%; /* Adjust the width as needed */
             margin-right: 20px; /* Add some spacing between the form and gallery */
             text-align: center;
             padding-right: 10px; /* Add some padding to separate the content from the border */
         }
 
-        #download-container h2 {
+        #upload-container h2 {
             margin-bottom: 10px;
         }
 
@@ -121,7 +124,7 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        #clear-button {
+        #delete-button {
             background-color: #4CAF50FF;
             color: #fff;
             padding: 10px 20px;
@@ -132,12 +135,12 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        #download-container, #gallery-container {
+        #upload-container, #gallery-container {
             flex: 1;
             padding: 20px;
         }
 
-        #download-container form {
+        #upload-container form {
             margin-bottom: 20px;
         }
 
@@ -160,7 +163,8 @@
             transition: transform 0.3s;
             margin-left: 25px;
         }
-        .gallery-item:hover{
+
+        .gallery-item:hover {
             transform: scale(1.15);
         }
 
@@ -192,38 +196,36 @@
             position: relative; /* Add position relative */
         }
 
-        #upload-button:hover{
+        #upload-button:hover {
             transform: scale(1.1);
         }
 
-        #clear-button:hover{
+        #delete-button:hover {
             transform: scale(1.1);
         }
-
-
 
 
     </style>
 
     <script>
-     // Enable delete button if at least one image is selected
-    const deleteForm = document.getElementById('delete-form');
-    const deleteButton = document.getElementById('clear-button');
-    const checkboxes = deleteForm.querySelectorAll('input[type="checkbox"]');
+        // Enable delete button if at least one image is selected
+        const deleteForm = document.getElementById('delete-form');
+        const deleteButton = document.getElementById('delete-button');
+        const checkboxes = deleteForm.querySelectorAll('input[type="checkbox"]');
 
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        const selectedImages = Array.from(checkboxes).some(cb => cb.checked);
-        deleteButton.disabled = !selectedImages;
-      });
-    });
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const selectedImages = Array.from(checkboxes).some(cb => cb.checked);
+                deleteButton.disabled = !selectedImages;
+            });
+        });
 
-    // Prevent form submission if no checkbox is checked
-    deleteForm.addEventListener('submit', (event) => {
-      if (!Array.from(checkboxes).some(cb => cb.checked)) {
-        event.preventDefault();
-        alert('Please select at least one image to delete.');
-      }
-    });
-  </script>
+        // Prevent form submission if no checkbox is checked
+        deleteForm.addEventListener('submit', (event) => {
+            if (!Array.from(checkboxes).some(cb => cb.checked)) {
+                event.preventDefault();
+                alert('Please select at least one image to delete.');
+            }
+        });
+    </script>
 {% endblock %}
