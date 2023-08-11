@@ -196,7 +196,7 @@ def prediction_results(request):
     return render(request, 'prediction_results.html', context)
 
 
-def delete_images(request):
+def clear_images_predictions(request):
     image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)  # Use the second media root
 
     # Delete all image files in the folder
