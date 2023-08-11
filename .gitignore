@@ -1,4 +1,5 @@
 *.pth
+*.onnx
 example_prediction_*
 __pycache__/*
 nohup.out
@@ -11,3 +12,5 @@ predictions/*.jpg
 sam_finetuned.onnx
 sam_vit_b_01ec64.pth
 sam_raw.onnx
+frontendPrototype/prototypeVirtualEnvironment/Lib/site-packages/torch/lib/dnnl.lib
+frontendPrototype/prototypeVirtualEnvironment/Lib/site-packages/torch/lib/torch_cpu.dll
