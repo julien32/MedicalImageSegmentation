@@ -8,7 +8,7 @@
                 {% csrf_token %}
                 <div class="form-group">
 
-                    <input type="file" name="images" accept="image/*" multiple required
+                    <input type="file" id="chooseButton" name="images" accept="image/*" multiple required
                            style="margin-bottom: 1rem; padding: 0.8rem 2rem; margin-top: 0.5rem; border: none; background-color: #4CAF50; color: white; font-size: 1rem; text-decoration: none; text-align: center; cursor: pointer; border-radius: 0.25rem;">
                     <br>
                     <input type="submit" id="upload-button" value="Upload" onclick="animateButton(this);"
@@ -197,6 +197,10 @@
         }
 
         #upload-button:hover {
+            transform: scale(1.1);
+        }
+
+        #chooseButton:hover {
             transform: scale(1.1);
         }
 
