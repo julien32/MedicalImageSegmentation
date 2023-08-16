@@ -166,8 +166,13 @@ def plot_prompt( ground_truth, input_image, input_points, input_labels, save_dir
     show_points(input_points, input_labels, ax[1])
     # ax[0].set_title(f"Mask {i+1}, Score: {score:.3f}", fontsize=10)
     ax[1].set_title("Ground truth mask", fontsize=10)
+<<<<<<< HEAD
     # ax[0].axis('off')
     # ax[1].axis('off')
+=======
+    ax[0].axis('off')
+    ax[1].axis('off')
+>>>>>>> scriptImplementationChatGPTApproach
     plt.savefig(os.path.join(save_dir, filename), bbox_inches='tight', pad_inches=0)
 
 
@@ -207,6 +212,7 @@ def imagenet_standardize(x: torch.Tensor) -> torch.Tensor:
         pixel_std = [58.395, 57.12, 57.375],
         x = (x - pixel_mean) / pixel_std
 
+<<<<<<< HEAD
 
         return x
 
@@ -220,4 +226,13 @@ def overlay_mask(img, mask):
     img = cv2.addWeighted(img, 0.5, mask, 0.5, 0.0)
     # img = img + 0.5 * mask
     return img
+=======
+        # # Pad
+        # h, w = x.shape[-2:]
+        # padh = self.image_encoder.img_size - h
+        # padw = self.image_encoder.img_size - w
+        # x = F.pad(x, (0, padw, 0, padh))
+        return x
+
+>>>>>>> scriptImplementationChatGPTApproach
 
