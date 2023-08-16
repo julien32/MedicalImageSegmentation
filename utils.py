@@ -74,9 +74,9 @@ def sample_ffe_points(masks):
 
 def show_points(coords, labels, ax, marker_size=50):
     pos_points = coords[labels==1]
-    neg_points = coords[labels==0]
+    # neg_points = coords[labels==0]
     ax.scatter(pos_points[:, 1], pos_points[:, 0], color='red', marker='x', s=marker_size)
-    ax.scatter(neg_points[:, 1], neg_points[:, 0], color='green', marker='x', s=marker_size)   
+    # ax.scatter(neg_points[:, 1], neg_points[:, 0], color='green', marker='x', s=marker_size)   
      
 
 def show_mask(mask, ax, random_color=False):
@@ -150,8 +150,8 @@ def plot_prediction(prediction, ground_truth, input_image, input_points, input_l
     show_points(input_points, input_labels, ax[1])
     # ax[0].set_title(f"Mask {i+1}, Score: {score:.3f}", fontsize=10)
     ax[1].set_title("Ground truth mask", fontsize=10)
-    ax[0].axis('off')
-    ax[1].axis('off')
+    # ax[0].axis('off')
+    # ax[1].axis('off')
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
 
 
@@ -166,8 +166,8 @@ def plot_prompt( ground_truth, input_image, input_points, input_labels, save_dir
     show_points(input_points, input_labels, ax[1])
     # ax[0].set_title(f"Mask {i+1}, Score: {score:.3f}", fontsize=10)
     ax[1].set_title("Ground truth mask", fontsize=10)
-    ax[0].axis('off')
-    ax[1].axis('off')
+    # ax[0].axis('off')
+    # ax[1].axis('off')
     plt.savefig(os.path.join(save_dir, filename), bbox_inches='tight', pad_inches=0)
 
 
@@ -207,11 +207,17 @@ def imagenet_standardize(x: torch.Tensor) -> torch.Tensor:
         pixel_std = [58.395, 57.12, 57.375],
         x = (x - pixel_mean) / pixel_std
 
-        # # Pad
-        # h, w = x.shape[-2:]
-        # padh = self.image_encoder.img_size - h
-        # padw = self.image_encoder.img_size - w
-        # x = F.pad(x, (0, padw, 0, padh))
+
         return x
 
+def overlay_mask(img, mask):
+    mask = mask.astype(np.float32)
+    mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+    mask = mask*255# / 255.0
+    img = img.astype(np.float32)
+    img = img# / 255.0
+    # Blend img with mask
+    img = cv2.addWeighted(img, 0.5, mask, 0.5, 0.0)
+    # img = img + 0.5 * mask
+    return img
 
