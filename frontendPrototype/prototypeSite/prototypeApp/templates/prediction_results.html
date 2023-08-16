@@ -230,15 +230,12 @@
         // Function to update image visibility based on selected toggles
         function updateImageVisibility() {
             const showMaskImages = showMaskImagesToggle.checked;
-            console.log(showMaskImagesToggle.checked)
             const showPredictionImages = showPredictionImagesToggle.checked;
-            console.log(showPredictionImagesToggle.checked)
 
             const images = document.querySelectorAll('.gallery-item img');
 
             images.forEach(image => {
                 const imageName = image.getAttribute('alt');
-                console.log("Image name: ", imageName);
                 const isMaskImage = imageName.startsWith('/prediction_media/mask_');
                 const isPredictionImage = imageName.startsWith('/prediction_media/prediction_');
 
@@ -250,11 +247,6 @@
                 }
             });
         }
-
-        function imageDetailFunc() {
-            alert("Here")
-        }
-
 
         // Initial call to set image visibility
         updateImageVisibility();

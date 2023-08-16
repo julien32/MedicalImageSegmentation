@@ -35,11 +35,8 @@ args = parser.parse_args()
 user_input = pd.read_csv(args.input_df)
 
 image_paths = user_input['filepath'].tolist()
-print("Paths: ", image_paths)
 prompts_y = user_input['y'].tolist()
-print("Y coords: ", prompts_y)
 prompts_x = user_input['x'].tolist()
-print("X coords: ", prompts_x)
 
 assert len(prompts_y) == len(prompts_x) == len(
     image_paths)  # make sure there is a prompt for each image (and vice versa)
@@ -65,9 +62,7 @@ for i, img_path in enumerate(image_paths):
 
     # iterate over images
     # load image
-    print("image path: ", img_path)
     image = cv2.imread(img_path)
-    print(f"Original image shape: {image.shape[0]}x{image.shape[1]} pixels")
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     plot_imgs.append(image.copy())
@@ -78,7 +73,6 @@ for i, img_path in enumerate(image_paths):
             image,
         )
     image = sam.preprocess(input_image_torch)
-    print(f"Resized image to {image.shape[1]}x{image.shape[2]} pixels")
 
     # get prompt coords
     y_coord = prompts_y[i]
@@ -129,8 +123,6 @@ resultString = ""
 maskString = ""
 # save predictions
 for j in range(len(plot_imgs)):
-    print(f"Reverting back to {plot_imgs[j].shape[0]}x{plot_imgs[j].shape[1]} pixels")
-
     prediction = utils.overlay_mask(plot_imgs[j], plot_masks[j][0])
     # Add cross where plot_points are
     prediction = cv2.drawMarker(prediction, tuple(plot_points[j][0][::-1]),
@@ -160,7 +152,6 @@ for j in range(len(plot_masks_raw)):
     match = re.search(regex_pattern, plot_paths[j])
     if match:
         maskString = match.group(1)
-        print("Mask Names: ", maskString)
     plt.savefig(os.path.join(
         prediction_location,
         f"mask_{maskString}"),

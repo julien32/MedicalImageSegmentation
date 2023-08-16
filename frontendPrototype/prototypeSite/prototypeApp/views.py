@@ -18,9 +18,6 @@ input_image_directory = "C:\\Users\\danie\\Desktop\\Master\\Master SoSe 2023\\Ma
 # Path to run_inference.sh script on local machine -> find inference.sh file in your local files
 script_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/run_inference.sh"
 
-# Update paths in inference.sh
-# ToDo: run inference with passed variables -> stefan
-
 # Path to csv file that saves all dot positions and image paths on local machine
 # Make sure csv Excel file is closed when running inference -> otherwise error will occur
 csv_path = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode"
@@ -50,7 +47,6 @@ def delete_images_confirm(request):
         for image_id in selected_images:
             picture = Picture.objects.get(id=image_id)
             # Delete the image file from the image folder
-            print(os.path)
             if os.path.exists(picture.image.path):
                 os.remove(picture.image.path)
             # Delete the Picture object from the database
@@ -144,25 +140,7 @@ def submit_annotation(request):
 
         print(f"CSV file '{csv_filename}' created/overwritten successfully at '{csv_full_path}'.")
 
-        for imagePath, x, y in values:
-            print("Image path: ", imagePath)
-            print("X value: ", x)
-            print("Y value: ", y)
-
         subprocess.call(script_path, shell=True)
-
-        # ToDo: Daniel
-        # ToDo: remove all the print statements and console logs (console.log, print, alert...)
-        # ToDo: fix onnx.py not using correct coordinates
-        # ToDo: make all paths relative -> onnx file, views, etc...
-        # ToDo: remove bash script shell popup
-        # ToDo: update readme with changes needed to be made to run script etc. -> paths
-        # ToDo: merge with main
-        # ToDo: fix results page
-
-        # ToDo: Luca
-        # ToDo: clean up gallery and results page using CSS
-        # ToDo: create new branch for css dev. Gallery_results_css
 
         return redirect('prediction_results')
 
@@ -180,15 +158,10 @@ def prediction_results(request):
     all_image_files = [os.path.join(settings.PREDICTION_MEDIA_URL, f) for f in os.listdir(prediction_image_folder) if
                        f.endswith(('.jpg', '.png', '.jpeg'))]
 
-    print("Image files: ", all_image_files)
-
     for image_file_counter in all_image_files:
-        print("HERE: ", image_file_counter)
         image_path = os.path.join(settings.PREDICTION_MEDIA_URL, image_file_counter)
         image_basename = os.path.basename(image_file_counter)
         image_data.append({'image_path': image_path, 'image_basename': image_basename})
-
-    print("ALL IMAGES: ", all_image_files)
 
     context = {
         'all_image_files': all_image_files,
