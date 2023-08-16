@@ -1,8 +1,5 @@
 *.pth
-<<<<<<< HEAD
 *.onnx
-=======
->>>>>>> scriptImplementationChatGPTApproach
 example_prediction_*
 __pycache__/*
 nohup.out
@@ -11,18 +8,11 @@ segment_anything/__pycache__/*
 segment_anything/modeling/__pycache__/*
 segment_anything/utils/__pycache__/*
 *.png
-<<<<<<< HEAD
 predictions/*.jpg
-sam_finetuned.onnx
-sam_vit_b_01ec64.pth
-sam_raw.onnx
-=======
 *.jpg
 *.csv
-predictions/*.jpg
 sam_vit_b_01ec64.pth
 sam_raw.onnx
 sam_finetuned.onnx
->>>>>>> scriptImplementationChatGPTApproach
 frontendPrototype/prototypeVirtualEnvironment/Lib/site-packages/torch/lib/dnnl.lib
 frontendPrototype/prototypeVirtualEnvironment/Lib/site-packages/torch/lib/torch_cpu.dll

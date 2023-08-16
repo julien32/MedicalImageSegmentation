@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+% extends 'base.html' %}
 
 {% block content %}
     <div id="main-container">
@@ -6,11 +6,7 @@
 
             <h1 style="margin-bottom: 1.5rem; text-align: center;">Clear Results</h1>
 
-<<<<<<< HEAD
-            <form action="{% url 'delete_images' %}" method="post">
-=======
             <form action="{% url 'clear_images_predictions' %}" method="post">
->>>>>>> scriptImplementationChatGPTApproach
                 {% csrf_token %}
                 <button id="clear-button" type="submit"
                         onclick="return confirm('Are you sure you want to clear all results?')">Clear Results
@@ -22,21 +18,12 @@
         <div id="gallery-container">
             <h1 style="margin-bottom: 1.5rem; text-align: center;">Result Gallery</h1>
             <div id="image-gallery">
-<<<<<<< HEAD
-                {% for image_file in image_files %}
-                    <div class="gallery-item {% if 'mask_' in image_file or 'prediction_' in image_file %}hidden{% endif %}">
-                        <a href="{% url 'image_detail' image_name=data.image_basename %}">
-                            <img src="{{ data.image_path }}" alt="{{ data.image_basename }}">
-                        </a>
-                    </div>
-=======
                 {% for image_file in all_image_files %}
                     <div class="gallery-item {% if 'mask_' in image_file or 'prediction_' in image_file %}hidden{% endif %}">
                         <img src="{{ image_file }}" alt="{{ image_file }}">
                     </div>
                     {% empty %}
                     <p>No images found in the results.</p>
->>>>>>> scriptImplementationChatGPTApproach
                 {% endfor %}
             </div>
         </div>
@@ -148,30 +135,18 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-<<<<<<< HEAD
-        #download-container, #gallery-container {
-=======
         #upload-container, #gallery-container {
->>>>>>> scriptImplementationChatGPTApproach
             flex: 1;
             padding: 20px;
         }
 
-<<<<<<< HEAD
-        #download-container form {
-=======
         #upload-container form {
->>>>>>> scriptImplementationChatGPTApproach
             margin-bottom: 20px;
         }
 
         #image-gallery {
             display: grid;
-<<<<<<< HEAD
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-=======
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
->>>>>>> scriptImplementationChatGPTApproach
             gap: 20px;
             justify-items: center;
             border-left: 2px solid #4CAF50; /* Add vertical border */
@@ -179,11 +154,7 @@
 
 
         .gallery-item {
-<<<<<<< HEAD
-            width: 250px;
-=======
             width: 400px;
->>>>>>> scriptImplementationChatGPTApproach
             padding: 10px;
             box-sizing: border-box;
             background-color: #ffffff;
@@ -264,10 +235,6 @@
             console.log(showPredictionImagesToggle.checked)
 
             const images = document.querySelectorAll('.gallery-item img');
-<<<<<<< HEAD
-            // const item_div = document.getElementById('gallery-item');
-=======
->>>>>>> scriptImplementationChatGPTApproach
 
             images.forEach(image => {
                 const imageName = image.getAttribute('alt');
@@ -284,10 +251,6 @@
             });
         }
 
-<<<<<<< HEAD
-        // Initial call to set image visibility
-        updateImageVisibility();
-=======
         function imageDetailFunc() {
             alert("Here")
         }
@@ -296,6 +259,5 @@
         // Initial call to set image visibility
         updateImageVisibility();
 
->>>>>>> scriptImplementationChatGPTApproach
     </script>
 {% endblock %}
