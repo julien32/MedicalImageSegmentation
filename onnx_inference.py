@@ -11,9 +11,11 @@ import utils
 import re
 
 checkpoint = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/sam_vit_b_01ec64.pth"
+# checkpoint = "/mnt/shared/lswezel/checkpoints/sam_vit_b_01ec64.pth"
 
 # Location of predictions on local machine
 prediction_location = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/frontendPrototype/prototypeSite/prediction_media"
+# prediction_location = "predictions"
 
 parser = argparse.ArgumentParser("Run onnxruntime inference sess")
 parser.add_argument("--onnx-checkpoint",
@@ -65,6 +67,7 @@ for i, img_path in enumerate(image_paths):
     # load image
     print("image path: ", img_path)
     image = cv2.imread(img_path)
+    print(f"Original image shape: {image.shape[0]}x{image.shape[1]} pixels")
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     plot_imgs.append(image.copy())
@@ -75,6 +78,7 @@ for i, img_path in enumerate(image_paths):
             image,
         )
     image = sam.preprocess(input_image_torch)
+    print(f"Resized image to {image.shape[1]}x{image.shape[2]} pixels")
 
     # get prompt coords
     y_coord = prompts_y[i]
@@ -125,6 +129,20 @@ resultString = ""
 maskString = ""
 # save predictions
 for j in range(len(plot_imgs)):
+    print(f"Reverting back to {plot_imgs[j].shape[0]}x{plot_imgs[j].shape[1]} pixels")
+
+    prediction = utils.overlay_mask(plot_imgs[j], plot_masks[j][0])
+    # Add cross where plot_points are
+    prediction = cv2.drawMarker(prediction, tuple(plot_points[j][0][::-1]),
+                                (255, 0, 0), markerType=cv2.MARKER_CROSS, markerSize=20, thickness=3)
+
+    cv2.imwrite(os.path.join(
+        prediction_location,
+        f"prediction_{resultString}.jpg"),
+        cv2.cvtColor(prediction, cv2.COLOR_RGB2BGR)
+        # plot_imgs[j]
+    )
+    # Resize back to original image resolution
     fig, ax = plt.subplots()
     ax.imshow(plot_imgs[j])
     utils.show_mask(plot_masks[j], ax)
@@ -133,13 +151,6 @@ for j in range(len(plot_imgs)):
     match = re.search(regex_pattern, plot_paths[j])
     if match:
         resultString = match.group(1)
-
-    print("Image Names: ", resultString)
-    plt.savefig(os.path.join(
-        prediction_location,
-        f"prediction_{resultString}"),
-        bbox_inches='tight',
-        pad_inches=0)
 
 # save masks
 for j in range(len(plot_masks_raw)):
@@ -150,9 +161,13 @@ for j in range(len(plot_masks_raw)):
     if match:
         maskString = match.group(1)
         print("Mask Names: ", maskString)
-
     plt.savefig(os.path.join(
         prediction_location,
         f"mask_{maskString}"),
-                bbox_inches='tight',
-                pad_inches=0)
+        bbox_inches='tight',
+        pad_inches=0)
+# save masks
+for j in range(len(plot_masks_raw)):
+    fig, ax = plt.subplots()
+    ax.imshow(plot_masks_raw[j])
+    ax.axis('off')
