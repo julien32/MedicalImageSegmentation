@@ -15,9 +15,6 @@ checkpoint = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in
 # Location of predictions on local machine
 prediction_location = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/frontendPrototype/prototypeSite/prediction_media"
 
-# Location of predictions on local machine
-prediction_location = "C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/frontendPrototype/prototypeSite/prediction_media"
-
 parser = argparse.ArgumentParser("Run onnxruntime inference sess")
 parser.add_argument("--onnx-checkpoint",
                     type=str,
@@ -68,7 +65,6 @@ for i, img_path in enumerate(image_paths):
     # load image
     print("image path: ", img_path)
     image = cv2.imread(img_path)
-    print(f"Original image shape: {image.shape[0]}x{image.shape[1]} pixels")
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     plot_imgs.append(image.copy())
@@ -79,7 +75,6 @@ for i, img_path in enumerate(image_paths):
             image,
         )
     image = sam.preprocess(input_image_torch)
-    print(f"Resized image to {image.shape[1]}x{image.shape[2]} pixels")
 
     # get prompt coords
     y_coord = prompts_y[i]
@@ -118,7 +113,7 @@ for i, img_path in enumerate(image_paths):
     normalized_masks = (masks - masks.min()) / (masks.max() - masks.min())
     normalized_masks *= 255
     normalized_masks = normalized_masks.astype(np.uint8)
-    # Convert to numpy and save 
+    # Convert to numpy and save
     plot_masks_raw.append(normalized_masks[0][0])
     masks = masks > predictor.model.mask_threshold
 
@@ -130,20 +125,6 @@ resultString = ""
 maskString = ""
 # save predictions
 for j in range(len(plot_imgs)):
-    print(f"Reverting back to {plot_imgs[j].shape[0]}x{plot_imgs[j].shape[1]} pixels")
-
-    prediction = utils.overlay_mask(plot_imgs[j], plot_masks[j][0])
-    # Add cross where plot_points are
-    prediction = cv2.drawMarker(prediction, tuple(plot_points[j][0][::-1]),
-                                (255, 0, 0), markerType=cv2.MARKER_CROSS, markerSize=20, thickness=3)
-
-    cv2.imwrite(os.path.join(
-        prediction_location,
-        f"prediction_{resultString}.jpg"),
-        cv2.cvtColor(prediction, cv2.COLOR_RGB2BGR)
-        # plot_imgs[j]
-    )
-    # Resize back to original image resolution
     fig, ax = plt.subplots()
     ax.imshow(plot_imgs[j])
     utils.show_mask(plot_masks[j], ax)
@@ -173,15 +154,5 @@ for j in range(len(plot_masks_raw)):
     plt.savefig(os.path.join(
         prediction_location,
         f"mask_{maskString}"),
-        bbox_inches='tight',
-        pad_inches=0)
-
-# save masks
-for j in range(len(plot_masks_raw)):
-    fig, ax = plt.subplots()
-    ax.imshow(plot_masks_raw[j])
-    ax.axis('off')
-    plt.savefig(os.path.join("predictions",
-                             f"mask_{plot_paths[j].split('/')[-1]}"),
                 bbox_inches='tight',
                 pad_inches=0)
