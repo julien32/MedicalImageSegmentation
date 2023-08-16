@@ -154,7 +154,6 @@ def submit_annotation(request):
         # ToDo: Daniel
         # ToDo: remove all the print statements and console logs (console.log, print, alert...)
         # ToDo: fix onnx.py not using correct coordinates
-        # ToDo: add page to closer inspect prediction result images
         # ToDo: make all paths relative -> onnx file, views, etc...
         # ToDo: remove bash script shell popup
         # ToDo: update readme with changes needed to be made to run script etc. -> paths
