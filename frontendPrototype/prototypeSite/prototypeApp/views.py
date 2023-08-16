@@ -9,7 +9,8 @@ import pandas as pd
 from .models import Picture
 import math
 from django.conf import settings
-from django.http import Http404
+from urllib.parse import unquote
+import base64
 
 # Path to folder with input images -> created automatically when uploading images via website -> need to update path for local machine
 input_image_directory = "C:\\Users\\danie\\Desktop\\Master\\Master SoSe 2023\\Machine Learning in Graphics, Vision and Language\\GithubTeamCode\\frontendPrototype\\prototypeSite\\media\\images\\"
@@ -156,8 +157,10 @@ def submit_annotation(request):
         # ToDo: fix onnx.py not using correct coordinates
         # ToDo: add page to closer inspect prediction result images
         # ToDo: make all paths relative -> onnx file, views, etc...
-        # ToDo: implement arrow keys on results page to look at all results
         # ToDo: remove bash script shell popup
+        # ToDo: update readme with changes needed to be made to run script etc. -> paths
+        # ToDo: merge with main
+        # ToDo: fix results page
 
         # ToDo: Luca
         # ToDo: clean up gallery and results page using CSS
@@ -176,23 +179,24 @@ def base(request):
 def prediction_results(request):
     image_data = []
     prediction_image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)
-    image_files = [os.path.join(settings.PREDICTION_MEDIA_URL, f) for f in os.listdir(prediction_image_folder) if
-                   f.endswith(('.jpg', '.png', '.jpeg'))]
+    all_image_files = [os.path.join(settings.PREDICTION_MEDIA_URL, f) for f in os.listdir(prediction_image_folder) if
+                       f.endswith(('.jpg', '.png', '.jpeg'))]
 
-    print("Image files: ", image_files)
+    print("Image files: ", all_image_files)
     print("Prediction image files: ", prediction_image_folder)
+    print("Type", type(all_image_files[0]))
 
-    for image_file in image_files:
-        image_path = os.path.join(settings.PREDICTION_MEDIA_URL, image_file)
-        image_basename = os.path.basename(image_file)
+    for image_file_counter in all_image_files:
+        image_path = os.path.join(settings.PREDICTION_MEDIA_URL, image_file_counter)
+        image_basename = os.path.basename(image_file_counter)
         image_data.append({'image_path': image_path, 'image_basename': image_basename})
 
     context = {
-        'image_files': image_files,
+        'all_image_files': all_image_files,
         'image_location': prediction_image_folder,
         'image_data': image_data,
-
     }
+
     return render(request, 'prediction_results.html', context)
 
 
@@ -209,10 +213,9 @@ def clear_images_predictions(request):
     return redirect('gallery')
 
 
-def image_detail(request, image_name):
-    image_path = os.path.join(settings.PREDICTION_MEDIA_ROOT, image_name)
-
-    if os.path.exists(image_path):
-        return render(request, 'image_detail.html', {'image_path': image_path})
-    else:
-        raise Http404('Image not found')
+def image_detail(request):
+    image_base64 = request.GET.get('image_base64')
+    image_filename = base64.urlsafe_b64decode(image_base64).decode('utf-8')
+    image_url = f"C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/frontendPrototype/prototypeSite/media{image_filename}"  # Adjust the image path
+    context = {'image_url': image_url, 'image_filename': image_filename}
+    return render(request, 'image_detail.html', context)

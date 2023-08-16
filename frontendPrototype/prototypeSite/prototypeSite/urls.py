@@ -32,7 +32,7 @@ urlpatterns = [
     path('delete/confirm/', views.delete_images_confirm, name='delete_images_confirm'),
     path('results/', views.prediction_results, name='prediction_results'),
     path('clear_images/', views.clear_images_predictions, name='clear_images_predictions'),
-    path('image_detail/<str:image_name>/', views.image_detail, name='image_detail'),
+    path('image_detail/<str:image_filename>/', views.image_detail, name='image_detail'),
 ]
 
 if settings.DEBUG:
