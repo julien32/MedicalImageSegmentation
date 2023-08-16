@@ -20,9 +20,7 @@
             <div id="image-gallery">
                 {% for image_file in all_image_files %}
                     <div class="gallery-item {% if 'mask_' in image_file or 'prediction_' in image_file %}hidden{% endif %}">
-                        <a href="{% url 'image_detail' image_base64=image_file|urlencode %}">
-                            <img src="{{ image_file }}" alt="{{ image_file }}">
-                        </a>
+                        <img src="{{ image_file }}" alt="{{ image_file }}">
                     </div>
                     {% empty %}
                     <p>No images found in the results.</p>
@@ -148,7 +146,7 @@
 
         #image-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 20px;
             justify-items: center;
             border-left: 2px solid #4CAF50; /* Add vertical border */
@@ -156,7 +154,7 @@
 
 
         .gallery-item {
-            width: 250px;
+            width: 400px;
             padding: 10px;
             box-sizing: border-box;
             background-color: #ffffff;
@@ -237,7 +235,6 @@
             console.log(showPredictionImagesToggle.checked)
 
             const images = document.querySelectorAll('.gallery-item img');
-            // const item_div = document.getElementById('gallery-item');
 
             images.forEach(image => {
                 const imageName = image.getAttribute('alt');
@@ -253,6 +250,11 @@
                 }
             });
         }
+
+        function imageDetailFunc() {
+            alert("Here")
+        }
+
 
         // Initial call to set image visibility
         updateImageVisibility();

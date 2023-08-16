@@ -34,7 +34,6 @@ def gallery_view(request):
         return redirect('gallery')
 
     pictures = Picture.objects.all()
-    print("PAth", os.path)
     return render(request, 'gallery.html', {'pictures': pictures})
 
 
@@ -183,13 +182,14 @@ def prediction_results(request):
                        f.endswith(('.jpg', '.png', '.jpeg'))]
 
     print("Image files: ", all_image_files)
-    print("Prediction image files: ", prediction_image_folder)
-    print("Type", type(all_image_files[0]))
 
     for image_file_counter in all_image_files:
+        print("HERE: ", image_file_counter)
         image_path = os.path.join(settings.PREDICTION_MEDIA_URL, image_file_counter)
         image_basename = os.path.basename(image_file_counter)
         image_data.append({'image_path': image_path, 'image_basename': image_basename})
+
+    print("ALL IMAGES: ", all_image_files)
 
     context = {
         'all_image_files': all_image_files,
@@ -211,11 +211,3 @@ def clear_images_predictions(request):
 
     # Redirect to another page after deleting images
     return redirect('gallery')
-
-
-def image_detail(request):
-    image_base64 = request.GET.get('image_base64')
-    image_filename = base64.urlsafe_b64decode(image_base64).decode('utf-8')
-    image_url = f"C:/Users/danie/Desktop/Master/Master SoSe 2023/Machine Learning in Graphics, Vision and Language/GithubTeamCode/frontendPrototype/prototypeSite/media{image_filename}"  # Adjust the image path
-    context = {'image_url': image_url, 'image_filename': image_filename}
-    return render(request, 'image_detail.html', context)
