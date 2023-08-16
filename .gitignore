@@ -11,6 +11,7 @@ segment_anything/utils/__pycache__/*
 predictions/*.jpg
 *.jpg
 *.csv
+annotation_image_data.csv
 sam_vit_b_01ec64.pth
 sam_raw.onnx
 sam_finetuned.onnx
