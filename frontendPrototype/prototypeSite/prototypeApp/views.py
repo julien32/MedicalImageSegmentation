@@ -157,6 +157,7 @@ def prediction_results(request):
     prediction_image_folder = os.path.join(settings.PREDICTION_MEDIA_ROOT)
     all_image_files = [os.path.join(settings.PREDICTION_MEDIA_URL, f) for f in os.listdir(prediction_image_folder) if
                        f.endswith(('.jpg', '.png', '.jpeg'))]
+    print(all_image_files)
 
     for image_file_counter in all_image_files:
         image_path = os.path.join(settings.PREDICTION_MEDIA_URL, image_file_counter)

@@ -35,7 +35,6 @@ args = parser.parse_args()
 user_input = pd.read_csv(args.input_df)
 
 image_paths = user_input['filepath'].tolist()
-print(image_paths)
 prompts_y = user_input['y'].tolist()
 prompts_x = user_input['x'].tolist()
 
