@@ -35,6 +35,7 @@ args = parser.parse_args()
 user_input = pd.read_csv(args.input_df)
 
 image_paths = user_input['filepath'].tolist()
+print(image_paths)
 prompts_y = user_input['y'].tolist()
 prompts_x = user_input['x'].tolist()
 
@@ -128,12 +129,7 @@ for j in range(len(plot_imgs)):
     prediction = cv2.drawMarker(prediction, tuple(plot_points[j][0][::-1]),
                                 (255, 0, 0), markerType=cv2.MARKER_CROSS, markerSize=20, thickness=3)
 
-    cv2.imwrite(os.path.join(
-        prediction_location,
-        f"prediction_{resultString}.jpg"),
-        cv2.cvtColor(prediction, cv2.COLOR_RGB2BGR)
-        # plot_imgs[j]
-    )
+
     # Resize back to original image resolution
     fig, ax = plt.subplots()
     ax.imshow(plot_imgs[j])
@@ -143,6 +139,12 @@ for j in range(len(plot_imgs)):
     match = re.search(regex_pattern, plot_paths[j])
     if match:
         resultString = match.group(1)
+    cv2.imwrite(os.path.join(
+        prediction_location,
+        f"prediction_{resultString}"),
+        cv2.cvtColor(prediction, cv2.COLOR_RGB2BGR)
+        # plot_imgs[j]
+    )
 
 # save masks
 for j in range(len(plot_masks_raw)):
@@ -157,8 +159,3 @@ for j in range(len(plot_masks_raw)):
         f"mask_{maskString}"),
         bbox_inches='tight',
         pad_inches=0)
-# save masks
-for j in range(len(plot_masks_raw)):
-    fig, ax = plt.subplots()
-    ax.imshow(plot_masks_raw[j])
-    ax.axis('off')
